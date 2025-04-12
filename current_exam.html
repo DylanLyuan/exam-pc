@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新威课堂 - 正在考试</title>
+    <style>
+        /* 重置样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航栏 */
+        .header {
+            background-color: #252525;
+            color: #e0e0e0;
+            padding: 0 20px;
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 36px;
+            margin-right: 10px;
+        }
+        
+        .exam-timer {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .exam-timer i {
+            margin-right: 5px;
+            color: #ff9500;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #444;
+            margin-left: 15px;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+        }
+        
+        /* 主内容区 */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+        
+        /* 左侧题目列表 */
+        .questions-nav {
+            width: 220px;
+            background-color: #252525;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            padding: 15px;
+            margin-right: 20px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        
+        .nav-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-title span {
+            color: #5e81ac;
+        }
+        
+        .question-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .question-number {
+            width: 100%;
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            background-color: #333;
+            color: #e0e0e0;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .question-number:hover {
+            background-color: #444;
+        }
+        
+        .question-number.current {
+            background-color: #5e81ac;
+            color: white;
+        }
+        
+        .question-number.answered {
+            background-color: #4c566a;
+            color: #a3be8c;
+        }
+        
+        .question-number.marked {
+            position: relative;
+        }
+        
+        .question-number.marked::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #bf616a;
+        }
+        
+        .nav-footer {
+            display: flex;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        
+        .legend {
+            display: flex;
+            flex-direction: column;
+            margin-top: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: #b0b0b0;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+        
+        .legend-current {
+            background-color: #5e81ac;
+        }
+        
+        .legend-answered {
+            background-color: #4c566a;
+        }
+        
+        .legend-unmarked {
+            background-color: #333;
+        }
+        
+        .legend-marked {
+            position: relative;
+            background-color: #333;
+        }
+        
+        .legend-marked::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: #bf616a;
+        }
+        
+        /* 右侧题目内容 */
+        .question-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .question-card {
+            background-color: #252525;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            overflow: hidden;
+            flex-grow: 1;
+        }
+        
+        .question-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .question-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #e0e0e0;
+        }
+        
+        .question-type {
+            color: #b0b0b0;
+            font-size: 14px;
+        }
+        
+        .question-body {
+            padding: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        .question-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #e0e0e0;
+        }
+        
+        .options-list {
+            list-style-type: none;
+        }
+        
+        .option-item {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .option-item:hover {
+            border-color: #5e81ac;
+            background-color: #2e3440;
+        }
+        
+        .option-item.selected {
+            border-color: #5e81ac;
+            background-color: #2e3440;
+        }
+        
+        .option-checkbox {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            border: 1px solid #666;
+            border-radius: 3px;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .option-item.selected .option-checkbox {
+            background-color: #5e81ac;
+            border-color: #5e81ac;
+        }
+        
+        .option-item.selected .option-checkbox::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 6px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        
+        .option-radio {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            border: 1px solid #666;
+            border-radius: 50%;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .option-item.selected .option-radio {
+            border-color: #5e81ac;
+        }
+        
+        .option-item.selected .option-radio::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #5e81ac;
+        }
+        
+        .question-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .question-action {
+            display: flex;
+            align-items: center;
+        }
+        
+        .mark-question {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+            cursor: pointer;
+            color: #b0b0b0;
+            font-size: 14px;
+        }
+        
+        .mark-question i {
+            margin-right: 5px;
+            font-size: 16px;
+        }
+        
+        .mark-question.marked {
+            color: #bf616a;
+        }
+        
+        .question-navigation {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            padding: 8px 20px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .btn i {
+            margin-right: 5px;
+        }
+        
+        .btn-primary {
+            background-color: #5e81ac;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #4c6f96;
+        }
+        
+        .btn-default {
+            background-color: #3b4252;
+            color: #e0e0e0;
+        }
+        
+        .btn-default:hover {
+            background-color: #434c5e;
+        }
+        
+        .btn-danger {
+            background-color: #bf616a;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #a6535c;
+        }
+        
+        /* 底部提交栏 */
+        .submit-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #252525;
+            padding: 10px 20px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .submit-progress {
+            display: flex;
+            align-items: center;
+        }
+        
+        .progress-text {
+            margin-right: 15px;
+            font-size: 14px;
+            color: #e0e0e0;
+        }
+        
+        .progress-bar {
+            width: 200px;
+            height: 8px;
+            background-color: #333;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #5e81ac;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #252525;
+            border-radius: 8px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+            width: 400px;
+            max-width: 90%;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e0e0e0;
+        }
+        
+        .modal-close {
+            cursor: pointer;
+            font-size: 20px;
+            color: #999;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            color: #e0e0e0;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .questions-nav {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
+            .question-container {
+                margin-bottom: 70px;
+            }
+        }
+        
+        /* 添加logo文本样式 */
+        .logo-text {
+            font-size: 16px;
+            font-weight: bold;
+            margin-right: 10px;
+            color: #5e81ac;
+            text-transform: uppercase;
+        }
+        
+        /* 提问按钮样式 */
+        .feedback-question {
+            display: flex;
+            align-items: center;
+            margin-left: 20px;
+            cursor: pointer;
+            color: #b0b0b0;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .feedback-question i {
+            margin-right: 5px;
+            font-size: 16px;
+        }
+        
+        .feedback-question:hover {
+            color: #5e81ac;
+        }
+        
+        /* 弹出式提问菜单 */
+        .feedback-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background-color: #2d2d2d;
+            border-radius: 6px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.3);
+            width: 220px;
+            z-index: 100;
+            padding: 10px 0;
+            display: none;
+        }
+        
+        .feedback-menu-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feedback-menu-item:hover {
+            background-color: #3b4252;
+        }
+        
+        .feedback-menu-item i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+            color: #5e81ac;
+        }
+    </style>
+    <!-- 引入图标字体 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-text">logo</span>
+            <span>新威课堂</span>
+        </div>
+        <div class="exam-timer">
+            <i class="fas fa-clock"></i>
+            <span id="timer">59:59</span>
+        </div>
+        <div class="user-info">
+            <span>张三</span>
+            <div class="avatar" style="background-image: url('https://placeholder.pics/svg/36x36/DEDEDE/555555/头像')"></div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="container">
+        <!-- 左侧题目导航 -->
+        <div class="questions-nav">
+            <div class="nav-title">
+                题目列表 <span id="progress-text">0/50</span>
+            </div>
+            
+            <div class="question-grid" id="question-grid">
+                <!-- 题目序号由JavaScript动态生成 -->
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color legend-current"></div>
+                    <span>当前题目</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color legend-answered"></div>
+                    <span>已答题目</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color legend-unmarked"></div>
+                    <span>未答题目</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color legend-marked"></div>
+                    <span>已标记题目</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧题目内容 -->
+        <div class="question-container">
+            <div class="question-card">
+                <div class="question-header">
+                    <div class="question-title">第 <span id="current-question-num">1</span> 题</div>
+                    <div class="question-type" id="question-type">单选题 (1分)</div>
+                </div>
+                
+                <div class="question-body">
+                    <div class="question-text" id="question-text">
+                        我公司成立于哪一年？
+                    </div>
+                    
+                    <ul class="options-list" id="options-list">
+                        <li class="option-item" data-option="A">
+                            <div class="option-radio"></div>
+                            <span>A. 1995年</span>
+                        </li>
+                        <li class="option-item" data-option="B">
+                            <div class="option-radio"></div>
+                            <span>B. 2000年</span>
+                        </li>
+                        <li class="option-item" data-option="C">
+                            <div class="option-radio"></div>
+                            <span>C. 2005年</span>
+                        </li>
+                        <li class="option-item" data-option="D">
+                            <div class="option-radio"></div>
+                            <span>D. 2010年</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="question-footer">
+                    <div class="question-action">
+                        <div class="mark-question" id="mark-question">
+                            <i class="far fa-flag"></i>
+                            <span>标记本题</span>
+                        </div>
+                        <div class="feedback-question" id="feedback-question">
+                            <i class="far fa-question-circle"></i>
+                            <span>提问</span>
+                        </div>
+                    </div>
+                    
+                    <div class="question-navigation">
+                        <button class="btn btn-default" id="prev-question" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                            上一题
+                        </button>
+                        <button class="btn btn-primary" id="next-question">
+                            下一题
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 底部提交栏 -->
+    <div class="submit-bar">
+        <div class="submit-progress">
+            <div class="progress-text">已完成: <span id="completed-count">0</span>/50</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+            </div>
+        </div>
+        
+        <button class="btn btn-danger" id="submit-exam">
+            <i class="fas fa-paper-plane"></i>
+            交卷
+        </button>
+    </div>
+    
+    <!-- 交卷确认弹窗 -->
+    <div class="modal" id="submit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">确认交卷</div>
+                <div class="modal-close" id="close-modal">&times;</div>
+            </div>
+            <div class="modal-body">
+                <p>您还有 <span id="unanswered-count">0</span> 道题目未作答，确定要交卷吗？</p>
+                <p style="margin-top: 10px; color: #bf616a;">注意：交卷后将无法修改答案！</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" id="cancel-submit">取消</button>
+                <button class="btn btn-danger" id="confirm-submit">确认交卷</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取元素
+            const questionGrid = document.getElementById('question-grid');
+            
+            // 生成题目导航格子
+            for (let i = 1; i <= 50; i++) {
+                const questionNumber = document.createElement('div');
+                questionNumber.className = 'question-number';
+                questionNumber.textContent = i;
+                questionNumber.setAttribute('data-question-id', i);
+                
+                if (i === 1) {
+                    questionNumber.classList.add('current');
+                }
+                
+                questionGrid.appendChild(questionNumber);
+            }
+            
+            // 处理"上一题"、"下一题"按钮
+            const prevButton = document.getElementById('prev-question');
+            const nextButton = document.getElementById('next-question');
+            
+            prevButton.addEventListener('click', function() {
+                alert('切换到上一题');
+            });
+            
+            nextButton.addEventListener('click', function() {
+                alert('切换到下一题');
+            });
+            
+            // 标记题目按钮
+            const markButton = document.getElementById('mark-question');
+            markButton.addEventListener('click', function() {
+                this.classList.toggle('marked');
+                if (this.classList.contains('marked')) {
+                    this.querySelector('i').className = 'fas fa-flag';
+                    this.querySelector('span').textContent = '取消标记';
+                } else {
+                    this.querySelector('i').className = 'far fa-flag';
+                    this.querySelector('span').textContent = '标记本题';
+                }
+            });
+            
+            // 选择选项
+            const options = document.querySelectorAll('.option-item');
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    options.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+            
+            // 交卷
+            document.getElementById('submit-exam').addEventListener('click', function() {
+                document.getElementById('submit-modal').style.display = 'flex';
+            });
+            
+            document.getElementById('close-modal').addEventListener('click', function() {
+                document.getElementById('submit-modal').style.display = 'none';
+            });
+            
+            document.getElementById('cancel-submit').addEventListener('click', function() {
+                document.getElementById('submit-modal').style.display = 'none';
+            });
+            
+            document.getElementById('confirm-submit').addEventListener('click', function() {
+                alert('交卷成功！即将跳转到结果页面。');
+                window.location.href = 'exam_result.html';
+            });
+
+            // 提交考试按钮点击事件
+            const submitExamBtn = document.querySelector('.submit-exam-btn');
+            if (submitExamBtn) {
+                submitExamBtn.addEventListener('click', function() {
+                    if (confirm('确定要提交考试吗？提交后将无法修改答案。')) {
+                        const examName = new URLSearchParams(window.location.search).get('name');
+                        window.location.href = `exam_result.html?name=${encodeURIComponent(examName)}&submitted=true`;
+                    }
+                });
+            }
+
+            // 提问按钮点击事件
+            const feedbackBtn = document.getElementById('feedback-question');
+            feedbackBtn.addEventListener('click', function() {
+                // 获取当前题目ID和考试ID
+                const currentQuestionNum = document.getElementById('current-question-num').textContent;
+                const questionId = document.querySelector('.question-number.current').getAttribute('data-question-id');
+                
+                // 获取URL中的考试ID参数
+                const urlParams = new URLSearchParams(window.location.search);
+                const examId = urlParams.get('examId') || '1';
+                const examName = urlParams.get('examName') || '未命名考试';
+                
+                // 显示选择类型弹窗
+                showFeedbackTypeDialog(questionId, examId);
+            });
+            
+            // 显示问题类型选择弹窗
+            function showFeedbackTypeDialog(questionId, examId) {
+                // 创建弹窗
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.style.display = 'flex';
+                
+                const modalContent = document.createElement('div');
+                modalContent.className = 'modal-content';
+                modalContent.style.width = '450px';
+                
+                modalContent.innerHTML = `
+                    <div class="modal-header">
+                        <div class="modal-title">选择问题类型</div>
+                        <div class="modal-close">&times;</div>
+                    </div>
+                    <div class="modal-body">
+                        <p>请选择您要提问的问题类型：</p>
+                        <div style="margin-top: 15px;">
+                            <div class="feedback-menu-item" data-type="题目表述不清">
+                                <i class="fas fa-align-left"></i>
+                                <span>题目表述不清</span>
+                            </div>
+                            <div class="feedback-menu-item" data-type="题目答案不准确">
+                                <i class="fas fa-times-circle"></i>
+                                <span>题目答案不准确</span>
+                            </div>
+                            <div class="feedback-menu-item" data-type="题目选项设置问题">
+                                <i class="fas fa-list-ul"></i>
+                                <span>题目选项设置问题</span>
+                            </div>
+                            <div class="feedback-menu-item" data-type="题目答案解析不足">
+                                <i class="fas fa-question-circle"></i>
+                                <span>题目答案解析不足</span>
+                            </div>
+                            <div class="feedback-menu-item" data-type="题目设置超纲">
+                                <i class="fas fa-expand-arrows-alt"></i>
+                                <span>题目设置超纲</span>
+                            </div>
+                            <div class="feedback-menu-item" data-type="其它题目问题">
+                                <i class="fas fa-ellipsis-h"></i>
+                                <span>其它题目问题</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                modal.appendChild(modalContent);
+                document.body.appendChild(modal);
+                
+                // 关闭按钮事件
+                const closeBtn = modalContent.querySelector('.modal-close');
+                closeBtn.addEventListener('click', function() {
+                    document.body.removeChild(modal);
+                });
+                
+                // 问题类型点击事件
+                const typeItems = modalContent.querySelectorAll('.feedback-menu-item');
+                typeItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const issueType = this.getAttribute('data-type');
+                        // 关闭弹窗
+                        document.body.removeChild(modal);
+                        // 跳转到反馈页面
+                        window.location.href = `exam_question_feedback.html?questionId=${questionId}&examId=${examId}&issueType=${encodeURIComponent(issueType)}`;
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

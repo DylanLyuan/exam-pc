@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新威课堂 - 新建提问</title>
+    <!-- 引入公共头部样式 -->
+    <link rel="stylesheet" href="css/common-header.css">
+    <!-- 引入图标字体 -->
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- 页面特定样式 -->
+    <style>
+        /* 重置样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        
+        /* 主内容区 */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 面包屑导航 */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #b0b0b0;
+        }
+        
+        .breadcrumb a {
+            color: #5e81ac;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb .separator {
+            margin: 0 10px;
+            color: #666;
+        }
+        
+        /* 页面标题 */
+        .page-title {
+            font-size: 24px;
+            color: #e0e0e0;
+            margin-bottom: 20px;
+        }
+        
+        /* 表单卡片 */
+        .form-card {
+            background-color: #252525;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* 表单组样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .required::after {
+            content: "*";
+            color: #bf616a;
+            margin-left: 4px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            background-color: #333;
+            color: #e0e0e0;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #5e81ac;
+            outline: none;
+        }
+        
+        .form-control:disabled {
+            background-color: #2d2d2d;
+            color: #999;
+            cursor: not-allowed;
+        }
+        
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23e0e0e0' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: calc(100% - 12px) center;
+            padding-right: 30px;
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        /* 字数计数器 */
+        .character-counter {
+            font-size: 12px;
+            color: #888;
+            text-align: right;
+            margin-top: 5px;
+        }
+        
+        /* 附件上传区域 */
+        .upload-area {
+            border: 2px dashed #444;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            border-color: #5e81ac;
+            background-color: rgba(94, 129, 172, 0.05);
+        }
+        
+        .upload-icon {
+            font-size: 30px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .upload-text {
+            color: #999;
+            margin-bottom: 10px;
+        }
+        
+        .upload-hint {
+            font-size: 12px;
+            color: #777;
+        }
+        
+        /* 上传文件列表 */
+        .file-list {
+            margin-top: 15px;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            background-color: #333;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+        }
+        
+        .file-icon {
+            font-size: 18px;
+            margin-right: 10px;
+        }
+        
+        .file-name {
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .file-size {
+            color: #999;
+            font-size: 12px;
+            margin: 0 10px;
+        }
+        
+        .file-remove {
+            color: #bf616a;
+            cursor: pointer;
+        }
+        
+        .file-remove:hover {
+            color: #d08770;
+        }
+        
+        /* 表单底部操作区 */
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 4px;
+            border: none;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background-color: #5e81ac;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #4c6f96;
+        }
+        
+        .btn-primary:disabled {
+            background-color: #41546e;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .btn-secondary {
+            background-color: #3b4252;
+            color: #e0e0e0;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #4c566a;
+        }
+        
+        /* 附件文件类型图标颜色 */
+        .file-icon.image {
+            color: #5e81ac;
+        }
+        
+        .file-icon.document {
+            color: #a3be8c;
+        }
+        
+        .file-icon.pdf {
+            color: #bf616a;
+        }
+        
+        /* 服务器响应提示区域 */
+        .response-message {
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .response-success {
+            background-color: rgba(163, 190, 140, 0.2);
+            border: 1px solid #a3be8c;
+            color: #a3be8c;
+        }
+        
+        .response-error {
+            background-color: rgba(191, 97, 106, 0.2);
+            border: 1px solid #bf616a;
+            color: #bf616a;
+        }
+        
+        /* 添加logo文本样式 */
+        .logo-text {
+            font-size: 16px;
+            font-weight: bold;
+            margin-right: 10px;
+            color: #5e81ac;
+            text-transform: uppercase;
+        }
+        
+        /* 单选卡片组样式 */
+        .radio-card-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 5px;
+        }
+        
+        .radio-card {
+            position: relative;
+        }
+        
+        .radio-card input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .radio-card label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100px;
+            padding: 15px;
+            background-color: #2d2d2d;
+            border: 2px solid #444;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .radio-card label i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #777;
+            transition: all 0.3s;
+        }
+        
+        .radio-card label span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .radio-card input[type="radio"]:checked + label {
+            border-color: #5e81ac;
+            background-color: rgba(94, 129, 172, 0.15);
+        }
+        
+        .radio-card input[type="radio"]:checked + label i {
+            color: #5e81ac;
+        }
+        
+        .radio-card input[type="radio"]:focus + label {
+            box-shadow: 0 0 0 2px rgba(94, 129, 172, 0.2);
+        }
+        
+        .radio-card:hover label {
+            border-color: #5e81ac;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .radio-card-group {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .radio-card-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-text">logo</span>
+            <span>新威课堂</span>
+        </div>
+        <div class="nav-items">
+            <div class="nav-item">
+                <a href="dashboard.html">首页</a>
+            </div>
+            <div class="nav-item">
+                <a href="learning_paths.html">学习路线</a>
+            </div>
+            <div class="nav-item">
+                <a href="my_exams.html">我的考试</a>
+            </div>
+        </div>
+        <div class="user-info">
+            <span>张三</span>
+            <div class="avatar" style="background-image: url('https://fakeimg.pl/36x36/DEDEDE/555555/?text=头像')"></div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="container">
+        <!-- 面包屑导航 -->
+        <div class="breadcrumb">
+            <a href="dashboard.html">首页</a>
+            <span class="separator">/</span>
+            <a href="my_exams.html">我的考试</a>
+            <span class="separator">/</span>
+            <a href="exam_result.html">考试结果</a>
+            <span class="separator">/</span>
+            <span>新建提问</span>
+        </div>
+        
+        <!-- 页面标题 -->
+        <h1 class="page-title">新建提问</h1>
+        
+        <!-- 服务器响应消息区域 -->
+        <div id="responseMessage" class="response-message">
+            提交已处理
+        </div>
+        
+        <!-- 表单卡片 -->
+        <div class="form-card">
+            <form id="feedbackForm">
+                <!-- 模块 -->
+                <div class="form-group">
+                    <label for="module" class="form-label required">模块</label>
+                    <input type="text" id="module" class="form-control" value="知识库考试/知识库考试题目" disabled>
+                </div>
+                
+                <!-- 单据名称 -->
+                <div class="form-group">
+                    <label for="documentName" class="form-label required">单据名称</label>
+                    <input type="text" id="documentName" class="form-control" value="题目" disabled>
+                </div>
+                
+                <!-- 单据编号 -->
+                <div class="form-group">
+                    <label for="documentNumber" class="form-label required">单据编号</label>
+                    <input type="text" id="documentNumber" class="form-control" value="QT-555555" disabled>
+                </div>
+                
+                <!-- 问题类型 -->
+                <div class="form-group">
+                    <label class="form-label required">问题类型</label>
+                    <div class="radio-card-group">
+                        <div class="radio-card">
+                            <input type="radio" name="issueType" id="issue-type-1" value="题目表述不清" checked>
+                            <label for="issue-type-1">
+                                <i class="fas fa-align-left"></i>
+                                <span>题目表述不清</span>
+                            </label>
+                        </div>
+                        <div class="radio-card">
+                            <input type="radio" name="issueType" id="issue-type-2" value="题目答案不准确">
+                            <label for="issue-type-2">
+                                <i class="fas fa-times-circle"></i>
+                                <span>题目答案不准确</span>
+                            </label>
+                        </div>
+                        <div class="radio-card">
+                            <input type="radio" name="issueType" id="issue-type-3" value="题目选项设置问题">
+                            <label for="issue-type-3">
+                                <i class="fas fa-list-ul"></i>
+                                <span>题目选项设置问题</span>
+                            </label>
+                        </div>
+                        <div class="radio-card">
+                            <input type="radio" name="issueType" id="issue-type-4" value="题目答案解析不足">
+                            <label for="issue-type-4">
+                                <i class="fas fa-question-circle"></i>
+                                <span>题目答案解析不足</span>
+                            </label>
+                        </div>
+                        <div class="radio-card">
+                            <input type="radio" name="issueType" id="issue-type-5" value="题目设置超纲">
+                            <label for="issue-type-5">
+                                <i class="fas fa-expand-arrows-alt"></i>
+                                <span>题目设置超纲</span>
+                            </label>
+                        </div>
+                        <div class="radio-card">
+                            <input type="radio" name="issueType" id="issue-type-6" value="其它题目问题">
+                            <label for="issue-type-6">
+                                <i class="fas fa-ellipsis-h"></i>
+                                <span>其它题目问题</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 问题描述 -->
+                <div class="form-group">
+                    <label for="description" class="form-label required">问题描述</label>
+                    <textarea id="description" class="form-control form-textarea" maxlength="100" required placeholder="请描述您遇到的问题..."></textarea>
+                    <div class="character-counter"><span id="charCount">0</span>/100</div>
+                </div>
+                
+                <!-- 附件上传 -->
+                <div class="form-group">
+                    <label class="form-label">附件</label>
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" id="fileInput" multiple style="display: none;">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">点击或拖拽文件到此处上传</div>
+                        <div class="upload-hint">支持图片、文档等格式，单个文件不超过5MB</div>
+                    </div>
+                    <div class="file-list" id="fileList"></div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 底部按钮 -->
+        <div class="form-actions">
+            <button type="button" class="btn btn-secondary" id="cancelBtn">取消</button>
+            <button type="button" class="btn btn-primary" id="submitBtn" disabled>提交</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取URL参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const questionId = urlParams.get('questionId');
+            const examId = urlParams.get('examId');
+            
+            // 字数统计功能
+            const descriptionTextarea = document.getElementById('description');
+            const charCountSpan = document.getElementById('charCount');
+            
+            descriptionTextarea.addEventListener('input', function() {
+                const currentLength = this.value.length;
+                charCountSpan.textContent = currentLength;
+                
+                // 实时验证表单有效性
+                validateForm();
+            });
+            
+            // 文件上传处理
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const fileList = document.getElementById('fileList');
+            
+            // 点击上传区域时触发文件选择
+            uploadArea.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // 处理拖放文件
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#5e81ac';
+                this.style.backgroundColor = 'rgba(94, 129, 172, 0.05)';
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#444';
+                this.style.backgroundColor = 'transparent';
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#444';
+                this.style.backgroundColor = 'transparent';
+                
+                if (e.dataTransfer.files.length > 0) {
+                    handleFiles(e.dataTransfer.files);
+                }
+            });
+            
+            // 处理文件选择
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    handleFiles(this.files);
+                }
+            });
+            
+            // 处理选择的文件
+            function handleFiles(files) {
+                for (const file of files) {
+                    // 检查文件大小
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('文件大小不能超过5MB');
+                        continue;
+                    }
+                    
+                    // 创建文件项元素
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    
+                    // 确定文件类型图标
+                    let iconClass = 'far fa-file';
+                    let iconColorClass = '';
+                    
+                    if (file.type.startsWith('image/')) {
+                        iconClass = 'far fa-file-image';
+                        iconColorClass = 'image';
+                    } else if (file.type === 'application/pdf') {
+                        iconClass = 'far fa-file-pdf';
+                        iconColorClass = 'pdf';
+                    } else if (file.type.includes('word') || file.type.includes('document')) {
+                        iconClass = 'far fa-file-word';
+                        iconColorClass = 'document';
+                    }
+                    
+                    // 格式化文件大小
+                    const fileSize = formatFileSize(file.size);
+                    
+                    fileItem.innerHTML = `
+                        <div class="file-icon ${iconColorClass}">
+                            <i class="${iconClass}"></i>
+                        </div>
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${fileSize}</div>
+                        <div class="file-remove">
+                            <i class="fas fa-times"></i>
+                        </div>
+                    `;
+                    
+                    // 添加删除功能
+                    const removeButton = fileItem.querySelector('.file-remove');
+                    removeButton.addEventListener('click', function() {
+                        fileItem.remove();
+                    });
+                    
+                    fileList.appendChild(fileItem);
+                }
+                
+                // 清空文件输入，以便重复选择同一文件
+                fileInput.value = '';
+            }
+            
+            // 格式化文件大小
+            function formatFileSize(bytes) {
+                if (bytes < 1024) {
+                    return bytes + ' B';
+                } else if (bytes < 1024 * 1024) {
+                    return (bytes / 1024).toFixed(1) + ' KB';
+                } else {
+                    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+                }
+            }
+            
+            // 表单验证
+            function validateForm() {
+                const description = document.getElementById('description').value;
+                const submitBtn = document.getElementById('submitBtn');
+                
+                // 判断问题描述是否填写
+                if (description.trim().length > 0) {
+                    submitBtn.disabled = false;
+                } else {
+                    submitBtn.disabled = true;
+                }
+            }
+            
+            // 提交按钮事件
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.addEventListener('click', function() {
+                const description = document.getElementById('description').value;
+                const issueType = document.querySelector('input[name="issueType"]:checked').value;
+                const documentNumber = document.getElementById('documentNumber').value;
+                
+                // 模拟表单提交
+                submitBtn.disabled = true;
+                submitBtn.textContent = '提交中...';
+                
+                // 模拟API调用
+                setTimeout(function() {
+                    const responseMessage = document.getElementById('responseMessage');
+                    responseMessage.classList.add('response-success');
+                    responseMessage.textContent = '提交成功！您的提问已记录，我们会尽快处理。';
+                    responseMessage.style.display = 'block';
+                    
+                    // 更新按钮状态
+                    submitBtn.textContent = '已提交';
+                    
+                    // 3秒后跳转
+                    setTimeout(function() {
+                        window.location.href = `exam_result.html?examId=${examId || '1'}`;
+                    }, 3000);
+                }, 1500);
+            });
+            
+            // 取消按钮事件
+            const cancelBtn = document.getElementById('cancelBtn');
+            cancelBtn.addEventListener('click', function() {
+                // 返回考试结果页面
+                window.location.href = `exam_result.html?examId=${examId || '1'}`;
+            });
+        });
+    </script>
+</body>
+</html>

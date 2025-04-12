@@ -1,0 +1,38 @@
+document.addEventListener('DOMContentLoaded', function() {
+    // 获取URL参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const entrySource = urlParams.get('source');
+    
+    // 移除所有导航项的active类
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // 根据当前页面路径或来源参数设置active类
+    const currentPath = window.location.pathname.split('/').pop();
+    
+    if (currentPath === 'dashboard.html') {
+        document.querySelector('.nav-item:nth-child(1)').classList.add('active');
+    } else if (currentPath === 'learning_exam.html') {
+        document.querySelector('.nav-item:nth-child(2)').classList.add('active');
+    } else if (currentPath === 'my_exams.html') {
+        document.querySelector('.nav-item:nth-child(3)').classList.add('active');
+    } else if (entrySource === 'learning') {
+        document.querySelector('.nav-item:nth-child(2)').classList.add('active');
+    } else if (entrySource === 'myexams') {
+        document.querySelector('.nav-item:nth-child(3)').classList.add('active');
+    }
+}); 
+
+<!-- 面包屑导航 -->
+<div class="breadcrumb">
+    <a href="dashboard.html">首页</a>
+    <span class="separator">/</span>
+    <!-- 第二级导航（必须）-->
+    <a href="页面URL" id="second-level">二级导航</a>
+    <!-- 第三级导航（可选）-->
+    <span class="separator" id="third-separator" style="display:none;">/</span>
+    <span id="third-level" style="display:none;">三级导航</span>
+</div> 
+
+<script src="all-pages.js"></script> 

@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新威课堂 - 首页</title>
+    <style>
+        /* 重置样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航栏 */
+        .header {
+            background-color: #252525;
+            color: #e0e0e0;
+            padding: 0 20px;
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 36px;
+            margin-right: 10px;
+        }
+        
+        .nav-items {
+            display: flex;
+        }
+        
+        .nav-item {
+            margin-left: 25px;
+            cursor: pointer;
+            position: relative;
+            height: 60px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-item.active {
+            font-weight: bold;
+        }
+        
+        .nav-item.active:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #ff9500;
+        }
+        
+        .nav-item a {
+            color: #e0e0e0;
+            text-decoration: none;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #444;
+            margin-left: 15px;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+        }
+        
+        /* 主内容区 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .welcome-section {
+            background-color: #252525;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        }
+        
+        .welcome-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .welcome-title {
+            font-size: 24px;
+            color: #e0e0e0;
+        }
+        
+        .welcome-stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 10px 15px;
+            background-color: #333;
+            border-radius: 8px;
+            min-width: 120px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #5e81ac;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #b0b0b0;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .view-all {
+            font-size: 14px;
+            color: #5e81ac;
+            text-decoration: none;
+        }
+        
+        .view-all:hover {
+            text-decoration: underline;
+        }
+        
+        .row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .col-6 {
+            flex: 0 0 calc(50% - 10px);
+        }
+        
+        @media (max-width: 768px) {
+            .col-6 {
+                flex: 0 0 100%;
+            }
+        }
+        
+        .card {
+            background-color: #252525;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 0;
+            color: #e5e9f0;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        /* 最近考试样式 */
+        .exam-item {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .exam-item:last-child {
+            border-bottom: none;
+        }
+        
+        .exam-icon {
+            width: 50px;
+            height: 50px;
+            background-color: #333;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: #5e81ac;
+            font-size: 24px;
+        }
+        
+        .exam-info {
+            flex-grow: 1;
+        }
+        
+        .exam-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .exam-time {
+            font-size: 13px;
+            color: #b0b0b0;
+            margin-bottom: 5px;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background-color: #333;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #5e81ac;
+            border-radius: 3px;
+        }
+        
+        .exam-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #b0b0b0;
+            margin-top: 5px;
+        }
+        
+        .exam-badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #e0e0e0;
+        }
+        
+        .badge-ongoing {
+            background-color: #5e81ac;
+        }
+        
+        .badge-completed {
+            background-color: #a3be8c;
+        }
+        
+        .badge-upcoming {
+            background-color: #ebcb8b;
+            color: #333;
+        }
+        
+        .badge-ended {
+            background-color: #4c566a;
+        }
+        
+        /* 学习进度模块 */
+        .study-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .study-name {
+            font-weight: bold;
+        }
+        
+        .study-percent {
+            color: #5e81ac;
+            font-weight: bold;
+        }
+        
+        /* 排行榜模块 */
+        .ranking-list {
+            margin-top: 10px;
+        }
+        
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            transition: background-color 0.2s;
+        }
+        
+        .ranking-item:last-child {
+            border-bottom: none;
+        }
+        
+        .ranking-item:hover {
+            transform: translateX(5px);
+            background-color: #303030;
+        }
+        
+        .ranking-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 14px;
+            background-color: #3b4252;
+        }
+        
+        .ranking-user {
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        .ranking-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 12px;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #4c566a;
+        }
+        
+        .ranking-name {
+            font-weight: bold;
+        }
+        
+        .ranking-score {
+            font-weight: bold;
+            color: #ebcb8b;
+        }
+        
+        /* 公告样式 */
+        .notice-item {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            transition: background-color 0.2s;
+        }
+        
+        .notice-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notice-item:hover {
+            transform: translateX(5px);
+            background-color: #303030;
+        }
+        
+        .notice-title {
+            font-size: 14px;
+            font-weight: normal;
+            margin-bottom: 5px;
+        }
+        
+        .notice-time {
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        /* 任务提醒 */
+        .task-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background-color: #2a2a2a;
+            border-radius: 6px;
+        }
+        
+        .task-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .task-item:hover {
+            transform: translateX(5px);
+            background-color: #303030;
+        }
+        
+        .task-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #3b4252;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: #5e81ac;
+            font-size: 16px;
+        }
+        
+        .task-content {
+            flex-grow: 1;
+        }
+        
+        .task-title {
+            font-size: 14px;
+            font-weight: normal;
+            margin-bottom: 5px;
+        }
+        
+        .task-deadline {
+            font-size: 13px;
+            color: #bf616a;
+        }
+        
+        /* 在样式部分修改面包屑样式 */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #b0b0b0;
+            height: 20px;
+        }
+        
+        .breadcrumb a {
+            color: #5e81ac;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb .separator {
+            margin: 0 10px;
+            color: #666;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .breadcrumb span, 
+        .breadcrumb a, 
+        .breadcrumb button {
+            line-height: 20px;
+            vertical-align: middle;
+        }
+        
+        /* 修改首页推荐课程卡片样式 */
+        .course-recommendation {
+            margin-top: 30px;
+        }
+        
+        .recommended-course-card {
+            background-color: #2e3440;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #3b4252;
+            cursor: pointer;
+        }
+        
+        .recommended-course-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border-color: #4c566a;
+        }
+        
+        .recommended-course-title {
+            font-size: 17px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #eceff4;
+        }
+        
+        .recommended-course-meta {
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #d8dee9;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .recommended-meta-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .recommended-meta-item i {
+            margin-right: 5px;
+            color: #81a1c1;
+        }
+        
+        .recommended-course-desc {
+            color: #b0b0b0;
+            font-size: 13px;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .recommended-course-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid #3b4252;
+        }
+        
+        .recommended-course-status {
+            font-size: 13px;
+            color: #88c0d0;
+        }
+        
+        .learning-path-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #2a2a2a;
+            border-radius: 6px;
+        }
+        
+        .learning-path-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .path-info {
+            flex: 1;
+        }
+        
+        .path-name {
+            font-size: 14px;
+            font-weight: normal;
+            margin-bottom: 5px;
+        }
+        
+        .path-progress {
+            margin-top: 5px;
+        }
+        
+        .path-progress-text {
+            font-size: 13px;
+            color: #aaa;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background-color: #333;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 5px;
+            width: 100%;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #5e81ac;
+            border-radius: 3px;
+        }
+        
+        .view-all {
+            font-size: 14px;
+            color: #5e81ac;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .view-all i {
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        
+        .view-all:hover {
+            text-decoration: underline;
+        }
+        
+        /* 排行榜项的样式调整 */
+        .ranking-meta {
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        .ranking-exams {
+            font-size: 12px;
+            color: #8eb1e1;
+            margin-bottom: 2px;
+        }
+        
+        .ranking-score {
+            font-weight: bold;
+            color: #ebcb8b;
+        }
+        
+        /* 修改按钮样式 */
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #5e81ac;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #4c70a1;
+        }
+        
+        /* 卡片样式优化 */
+        .dashboard-card {
+            margin-bottom: 20px;
+            background-color: #252525;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .card-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            background-color: #2a2a2a;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        /* 学习路径项样式优化 */
+        .learning-path-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #2a2a2a;
+            border-radius: 6px;
+        }
+        
+        .learning-path-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* 排行榜表头样式 */
+        .ranking-header {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 2px solid #3b4252;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .ranking-header-item {
+            text-align: center;
+        }
+        
+        .rank-col {
+            width: 15%;
+        }
+        
+        .name-col {
+            width: 35%;
+            text-align: left;
+        }
+        
+        .exam-col {
+            width: 25%;
+        }
+        
+        .score-col {
+            width: 25%;
+        }
+        
+        /* 排行榜容器 */
+        .ranking-list-container {
+            max-height: 480px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #4c566a #2e3440;
+        }
+        
+        .ranking-list-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .ranking-list-container::-webkit-scrollbar-track {
+            background: #2e3440;
+        }
+        
+        .ranking-list-container::-webkit-scrollbar-thumb {
+            background-color: #4c566a;
+            border-radius: 3px;
+        }
+        
+        /* 排行榜项 */
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: #2a2a2a;
+            border-radius: 6px;
+            transition: transform 0.2s;
+        }
+        
+        .ranking-item:hover {
+            transform: translateX(5px);
+            background-color: #303030;
+        }
+        
+        .ranking-number {
+            width: 15%;
+            text-align: center;
+        }
+        
+        .top-1, .top-2, .top-3 {
+            font-weight: bold;
+        }
+        
+        .top-1 {
+            color: #ebcb8b;
+        }
+        
+        .top-2 {
+            color: #d8dee9;
+        }
+        
+        .top-3 {
+            color: #bf616a;
+        }
+        
+        .ranking-user {
+            display: flex;
+            align-items: center;
+            width: 35%;
+        }
+        
+        .ranking-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #4c566a;
+        }
+        
+        .ranking-exams-col {
+            width: 25%;
+            text-align: center;
+        }
+        
+        .ranking-score-col {
+            width: 25%;
+            text-align: center;
+            color: #ebcb8b;
+            font-weight: bold;
+        }
+        
+        /* 加载提示器 */
+        .loading-indicator {
+            text-align: center;
+            padding: 15px;
+            color: #aaa;
+            display: none;
+        }
+        
+        .loading-indicator.visible {
+            display: block;
+        }
+        
+        /* 新增技能等级说明公告，并置顶 */
+        .notice-important {
+            background-color: rgba(163, 190, 140, 0.1);
+            border-left: 3px solid #a3be8c;
+        }
+        
+        .notice-important .notice-title {
+            color: #a3be8c;
+        }
+        
+        /* 统一卡片内文本样式 */
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 0;
+            color: #e5e9f0;
+        }
+        
+        /* 统一卡片列表项文本样式 */
+        .dashboard-card .card-body {
+            font-size: 14px;
+        }
+        
+        /* 排行榜项目样式 */
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            transition: background-color 0.2s;
+        }
+        
+        .ranking-item:last-child {
+            border-bottom: none;
+        }
+        
+        .ranking-user {
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        .ranking-meta {
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        /* 任务项目样式 */
+        .task-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background-color: #2a2a2a;
+            border-radius: 6px;
+        }
+        
+        .task-title {
+            font-size: 14px;
+            font-weight: normal;
+            margin-bottom: 5px;
+        }
+        
+        .task-deadline {
+            font-size: 13px;
+            color: #bf616a;
+        }
+        
+        /* 学习路径项样式 */
+        .learning-path-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #2a2a2a;
+            border-radius: 6px;
+        }
+        
+        .path-name {
+            font-size: 14px;
+            font-weight: normal;
+            margin-bottom: 5px;
+        }
+        
+        .path-progress-text {
+            font-size: 13px;
+            color: #aaa;
+        }
+        
+        /* 公告项样式 */
+        .notice-item {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            transition: background-color 0.2s;
+        }
+        
+        .notice-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notice-title {
+            font-size: 14px;
+            font-weight: normal;
+            margin-bottom: 5px;
+        }
+        
+        .notice-time {
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        /* 统一卡片间距 */
+        .dashboard-card {
+            margin-bottom: 20px;
+            background-color: #252525;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .card-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            background-color: #2a2a2a;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        /* 添加"查看全部"按钮样式 */
+        .view-all-btn {
+            display: inline-flex;
+            align-items: center;
+            color: #5e81ac;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+        
+        .view-all-btn:hover {
+            background-color: rgba(94, 129, 172, 0.1);
+            transform: translateX(2px);
+        }
+        
+        .view-all-btn i {
+            margin-left: 5px;
+            font-size: 12px;
+        }
+        
+        .continue-learning-btn {
+            display: inline-flex;
+            align-items: center;
+            color: #5e81ac;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+        
+        .continue-learning-btn:hover {
+            background-color: rgba(94, 129, 172, 0.1);
+            transform: translateX(2px);
+        }
+        
+        .continue-learning-btn i {
+            margin-left: 5px;
+            font-size: 12px;
+        }
+        
+        /* 添加logo文本样式 */
+        .logo-text {
+            font-size: 16px;
+            font-weight: bold;
+            margin-right: 10px;
+            color: #5e81ac;
+            text-transform: uppercase;
+        }
+    </style>
+    <!-- 引入图标字体 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-text">logo</span>
+            <span>新威课堂</span>
+        </div>
+        <div class="nav-items">
+            <div class="nav-item active">
+                <a href="dashboard.html">首页</a>
+            </div>
+            <div class="nav-item">
+                <a href="learning_paths.html">学习路线</a>
+            </div>
+            <div class="nav-item">
+                <a href="my_exams.html">我的考试</a>
+            </div>
+        </div>
+        <div class="user-info">
+            <span>张三</span>
+            <div class="avatar" style="background-image: url('https://placeholder.pics/svg/36x36/DEDEDE/555555/头像')"></div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="container">
+        <!-- 修改首页的面包屑导航 -->
+        <div class="breadcrumb">
+            <a href="dashboard.html">首页</a>
+        </div>
+        <!-- 欢迎区域 -->
+        <div class="welcome-section">
+            <div class="welcome-header">
+                <h1 class="welcome-title">你好，张三（内部技术员）</h1>
+                <div class="welcome-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">17</div>
+                        <div class="stat-label">已学习课程</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">已完成考试</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">2</div>
+                        <div class="stat-label">通过认证</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">85</div>
+                        <div class="stat-label">平均分数</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-6">
+                <!-- 学习进度 -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title">学习进度</h2>
+                        <a href="learning_paths.html" class="view-all">查看全部 <i class="fas fa-chevron-right"></i></a>
+                    </div>
+                    <div class="card-body">
+                        <div class="learning-path-item">
+                            <div class="path-info">
+                                <h3 class="path-name">初级业务员学习路线</h3>
+                                <div class="path-progress">
+                                    <div class="path-progress-text">完成进度：30%（3/10课程）</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 30%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="course_list.html?pathId=1&pathName=初级业务员学习路线" class="continue-learning-btn">
+                                继续学习 <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                        
+                        <div class="learning-path-item">
+                            <div class="path-info">
+                                <h3 class="path-name">产品知识基础培训</h3>
+                                <div class="path-progress">
+                                    <div class="path-progress-text">完成进度：50%（5/10课程）</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 50%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="course_list.html?pathId=2&pathName=产品知识基础培训" class="continue-learning-btn">
+                                继续学习 <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 排行榜卡片 -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title">考试排行榜</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- 添加表头 -->
+                        <div class="ranking-header">
+                            <div class="ranking-header-item rank-col">排名</div>
+                            <div class="ranking-header-item name-col">姓名</div>
+                            <div class="ranking-header-item exam-col">已通过考试</div>
+                            <div class="ranking-header-item score-col">平均分数</div>
+                        </div>
+                        
+                        <!-- 排行榜列表容器 -->
+                        <div class="ranking-list-container">
+                            <div class="ranking-list" id="ranking-list">
+                                <!-- 排行榜内容将通过JS动态加载 -->
+                            </div>
+                            <!-- 加载提示器 -->
+                            <div class="loading-indicator" id="ranking-loading">
+                                <i class="fas fa-circle-notch fa-spin"></i> 加载中...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-6">
+                <!-- 限时考试 -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title">限时考试</h2>
+                        <a href="my_exams.html" class="view-all">查看全部 <i class="fas fa-chevron-right"></i></a>
+                    </div>
+                    <div class="card-body">
+                        <div class="task-item">
+                            <div class="task-icon">
+                                <i class="fas fa-exclamation"></i>
+                            </div>
+                            <div class="task-content">
+                                <div class="task-title">完成第一季度企业知识库考核</div>
+                                <div class="task-deadline">剩余 3 天</div>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <div class="task-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="task-content">
+                                <div class="task-title">完成内部技术员岗位培训剩余课程</div>
+                                <div class="task-deadline">剩余 7 天</div>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <div class="task-icon">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <div class="task-content">
+                                <div class="task-title">参加产品知识专项培训</div>
+                                <div class="task-deadline">剩余 14 天</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 系统公告卡片 -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title">系统公告</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- 新增技能等级说明公告，并置顶 -->
+                        <div class="notice-item notice-important">
+                            <div class="notice-title">技能等级体系说明与晋升路径指南</div>
+                            <div class="notice-time">2023-05-01</div>
+                        </div>
+                        
+                        <div class="notice-item">
+                            <div class="notice-title">关于开展2023年内外部技术员考试的通知</div>
+                            <div class="notice-time">2023-03-15</div>
+                        </div>
+                        
+                        <div class="notice-item">
+                            <div class="notice-title">企业学习考试系统更新维护通知</div>
+                            <div class="notice-time">2023-03-01</div>
+                        </div>
+                        
+                        <div class="notice-item">
+                            <div class="notice-title">2023年度业务员培训计划公布</div>
+                            <div class="notice-time">2023-02-10</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 导航项点击事件
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // 链接已设置在HTML中
+                });
+            });
+            
+            // 获取今天的日期并格式化
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            
+            // 动态计算截止时间
+            const deadlineElements = document.querySelectorAll('.task-deadline');
+            deadlineElements.forEach((element, index) => {
+                // 这里只是示例，实际中可能需要从后端获取真实数据
+                const days = [3, 7, 14]; // 对应三个任务的剩余天数
+                element.textContent = `剩余 ${days[index]} 天`;
+            });
+            
+            // 点击考试卡片事件 - 跳转到考试详情页
+            const examItems = document.querySelectorAll('.exam-item');
+            examItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const examName = this.querySelector('.exam-name').textContent;
+                    const examStatus = this.querySelector('.exam-badge').textContent;
+                    
+                    // 根据考试状态决定跳转到哪个页面
+                    if (examStatus === '进行中' || examStatus === '即将开始') {
+                        window.location.href = `exam_detail.html?name=${encodeURIComponent(examName)}&source=dashboard`;
+                    } else if (examStatus === '已完成') {
+                        window.location.href = `exam_result.html?name=${encodeURIComponent(examName)}&source=dashboard`;
+                    }
+                });
+            });
+            
+            // 添加鼠标悬停效果
+            examItems.forEach(item => {
+                item.style.cursor = 'pointer';
+                item.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#2e3338';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = 'transparent';
+                });
+            });
+
+            // 添加触摸事件支持
+            examItems.forEach(item => {
+                // 现有的鼠标事件保持不变
+                
+                // 添加触摸事件
+                item.addEventListener('touchstart', function() {
+                    this.style.backgroundColor = '#2e3338';
+                });
+                
+                item.addEventListener('touchend', function() {
+                    this.style.backgroundColor = 'transparent';
+                    // 触发点击事件逻辑
+                    const examName = this.querySelector('.exam-name').textContent;
+                    const examStatus = this.querySelector('.exam-badge').textContent;
+                    
+                    if (examStatus === '进行中' || examStatus === '即将开始') {
+                        window.location.href = `exam_detail.html?name=${encodeURIComponent(examName)}&source=dashboard`;
+                    } else if (examStatus === '已完成') {
+                        window.location.href = `exam_result.html?name=${encodeURIComponent(examName)}&source=dashboard`;
+                    }
+                });
+            });
+
+            // 修改可能存在的旧链接
+            $('.learning-exam-link').attr('href', 'learning_paths.html');
+            $('.lesson-link').attr('href', 'course.html');
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 排行榜数据 - 模拟数据源
+            const rankingData = [
+                { id: 1, name: "李四", avatar: "头像1", exams: 15, score: 98 },
+                { id: 2, name: "王五", avatar: "头像2", exams: 14, score: 95 },
+                { id: 3, name: "赵六", avatar: "头像3", exams: 13, score: 93 },
+                { id: 4, name: "张三", avatar: "头像", exams: 12, score: 92 },
+                { id: 5, name: "刘七", avatar: "头像5", exams: 11, score: 90 },
+                { id: 6, name: "钱八", avatar: "头像6", exams: 10, score: 88 },
+                { id: 7, name: "孙九", avatar: "头像7", exams: 9, score: 86 },
+                { id: 8, name: "周十", avatar: "头像8", exams: 8, score: 85 },
+                { id: 9, name: "吴一", avatar: "头像9", exams: 7, score: 83 },
+                { id: 10, name: "郑二", avatar: "头像10", exams: 6, score: 82 },
+                { id: 11, name: "冯三", avatar: "头像11", exams: 5, score: 81 },
+                { id: 12, name: "陈四", avatar: "头像12", exams: 5, score: 80 },
+                { id: 13, name: "褚五", avatar: "头像13", exams: 5, score: 79 },
+                { id: 14, name: "卫六", avatar: "头像14", exams: 4, score: 78 },
+                { id: 15, name: "蒋七", avatar: "头像15", exams: 4, score: 77 },
+                { id: 16, name: "沈八", avatar: "头像16", exams: 4, score: 76 },
+                { id: 17, name: "韩九", avatar: "头像17", exams: 4, score: 75 },
+                { id: 18, name: "杨十", avatar: "头像18", exams: 3, score: 74 },
+                { id: 19, name: "朱一", avatar: "头像19", exams: 3, score: 73 },
+                { id: 20, name: "秦二", avatar: "头像20", exams: 3, score: 72 },
+                { id: 21, name: "许三", avatar: "头像21", exams: 3, score: 71 },
+                { id: 22, name: "何四", avatar: "头像22", exams: 2, score: 70 },
+                { id: 23, name: "吕五", avatar: "头像23", exams: 2, score: 69 },
+                { id: 24, name: "施六", avatar: "头像24", exams: 2, score: 68 },
+                { id: 25, name: "张七", avatar: "头像25", exams: 2, score: 67 },
+            ];
+            
+            // 先按已通过考试数量降序，然后按平均分数降序排序
+            rankingData.sort((a, b) => {
+                if (b.exams !== a.exams) {
+                    return b.exams - a.exams;  // 已通过考试数量降序
+                }
+                return b.score - a.score;  // 平均分数降序
+            });
+            
+            // 当前页码和每页显示数量
+            let currentPage = 1;
+            const itemsPerPage = 10;
+            let loading = false;
+            
+            // 获取DOM元素
+            const rankingList = document.getElementById('ranking-list');
+            const loadingIndicator = document.getElementById('ranking-loading');
+            
+            // 初始加载
+            loadRankingItems(currentPage);
+            
+            // 监听滚动事件
+            const container = document.querySelector('.ranking-list-container');
+            container.addEventListener('scroll', function() {
+                // 当滚动到距离底部50px时，加载更多数据
+                if (container.scrollHeight - container.scrollTop - container.clientHeight < 50 && !loading) {
+                    currentPage++;
+                    loadRankingItems(currentPage);
+                }
+            });
+            
+            // 加载排行榜项函数
+            function loadRankingItems(page) {
+                if (loading) return;
+                
+                // 计算起始和结束索引
+                const startIndex = (page - 1) * itemsPerPage;
+                const endIndex = Math.min(startIndex + itemsPerPage, rankingData.length);
+                
+                // 如果没有更多数据，返回
+                if (startIndex >= rankingData.length) {
+                    return;
+                }
+                
+                // 显示加载中
+                loading = true;
+                loadingIndicator.classList.add('visible');
+                
+                // 模拟网络请求延迟
+                setTimeout(function() {
+                    // 生成排行榜项HTML
+                    let html = '';
+                    for (let i = startIndex; i < endIndex; i++) {
+                        const rank = i + 1;
+                        const item = rankingData[i];
+                        
+                        // 为前三名添加特殊样式
+                        const rankClass = rank <= 3 ? `top-${rank}` : '';
+                        
+                        html += `
+                            <div class="ranking-item">
+                                <div class="ranking-number ${rankClass}">${rank}</div>
+                                <div class="ranking-user">
+                                    <div class="ranking-avatar" style="background-image: url('https://placeholder.pics/svg/32x32/DEDEDE/555555/${item.avatar}')"></div>
+                                    <div>${item.name}</div>
+                                </div>
+                                <div class="ranking-exams-col">${item.exams}次</div>
+                                <div class="ranking-score-col">${item.score}分</div>
+                            </div>
+                        `;
+                    }
+                    
+                    // 如果是第一页，直接替换内容，否则追加内容
+                    if (page === 1) {
+                        rankingList.innerHTML = html;
+                    } else {
+                        rankingList.innerHTML += html;
+                    }
+                    
+                    // 隐藏加载中
+                    loading = false;
+                    loadingIndicator.classList.remove('visible');
+                }, 500);
+            }
+        });
+    </script>
+    <script src="all-pages.js"></script>
+</body>
+</html>

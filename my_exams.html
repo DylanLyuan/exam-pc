@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新威课堂 - 我的考试</title>
+    <!-- 引入公共头部样式 -->
+    <link rel="stylesheet" href="css/common-header.css">
+    <!-- 引入图标字体 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- 页面特定样式 -->
+    <style>
+        /* 重置样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        
+        body {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            min-height: 100vh;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        
+        /* 顶部导航栏 */
+        .header {
+            background-color: #252525;
+            color: #e0e0e0;
+            padding: 0 20px;
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .logo {
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo-text {
+            font-size: 16px;
+            font-weight: bold;
+            margin-right: 10px;
+            color: #5e81ac;
+            text-transform: uppercase;
+        }
+        
+        .nav-items {
+            display: flex;
+        }
+        
+        .nav-item {
+            margin-left: 25px;
+            cursor: pointer;
+            position: relative;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            font-size: 15px;
+        }
+        
+        .nav-item.active {
+            font-weight: bold;
+        }
+        
+        .nav-item.active:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #ff9500;
+        }
+        
+        .nav-item a {
+            color: #e0e0e0;
+            text-decoration: none;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin-left: 15px;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+        }
+        
+        /* 主内容区 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .page-title {
+            font-size: 22px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* 搜索栏 */
+        .search-bar {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            flex-grow: 1;
+            max-width: 300px;
+            height: 36px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 0 15px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+            background-color: #333;
+            color: #e0e0e0;
+        }
+        
+        .search-input:focus {
+            border-color: #5e81ac;
+            box-shadow: 0 0 0 2px rgba(94,129,172,0.2);
+        }
+        
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        
+        .exam-tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            margin-right: 10px;
+            position: relative;
+            font-size: 15px;
+            color: #dcdcdc;
+        }
+        
+        .tab-item.active {
+            color: #82a0c2;
+            font-weight: bold;
+        }
+        
+        .tab-item.active:after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #5e81ac;
+        }
+        
+        .exam-table th {
+            text-align: left;
+            padding: 15px;
+            color: #e0e0e0;
+            font-weight: 500;
+            border-bottom: 1px solid #333;
+            white-space: nowrap;
+            font-size: 15px;
+        }
+        
+        .exam-table td {
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            color: #b0b0b0;
+            text-align: left;
+            font-size: 15px;
+        }
+        
+        .exam-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .exam-table tr:hover {
+            background-color: #2d2d2d;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 7px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-not-started {
+            background-color: #4c566a;
+            color: #e0e0e0;
+        }
+        
+        .status-ongoing {
+            color: #a3be8c;
+            background-color: rgba(163, 190, 140, 0.1);
+        }
+        
+        .status-ongoing::before {
+            background-color: #a3be8c;
+        }
+        
+        .status-ended {
+            background-color: #3b4252;
+            color: #d0d0d0;
+        }
+        
+        .status-completed {
+            background-color: #a3be8c;
+            color: white;
+        }
+        
+        .pass-badge {
+            display: inline-block;
+            padding: 3px 7px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .pass-yes {
+            background-color: #a3be8c;
+            color: white;
+        }
+        
+        .pass-no {
+            background-color: #bf616a;
+            color: white;
+        }
+        
+        .pass-unknown {
+            color: #a0a0a0;
+        }
+        
+        .btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 5px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #5e81ac;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #4c6f96;
+        }
+        
+        .btn-default {
+            background-color: #3b4252;
+            color: #e0e0e0;
+        }
+        
+        .btn-default:hover {
+            background-color: #434c5e;
+        }
+        
+        .btn-success {
+            background-color: #a3be8c;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #8fac77;
+        }
+        
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            font-size: 13px;
+        }
+        
+        .page-item {
+            margin: 0 5px;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid #444;
+            transition: all 0.3s;
+            color: #e0e0e0;
+        }
+        
+        .page-item:hover {
+            border-color: #5e81ac;
+            color: #5e81ac;
+        }
+        
+        .page-item.active {
+            background-color: #5e81ac;
+            color: white;
+            border-color: #5e81ac;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 0;
+            color: #999;
+            background-color: #252525;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        }
+        
+        .empty-state img {
+            width: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-state p {
+            font-size: 14px;
+            margin-top: 12px;
+        }
+        
+        /* 加载动画 */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(94,129,172,0.2);
+            border-radius: 50%;
+            border-top-color: #5e81ac;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 优化表格布局 */
+        .exam-table {
+            overflow-x: auto; /* 允许在小屏幕上横向滚动 */
+            font-size: 15px;
+        }
+        
+        .exam-table table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+        
+        /* 定义列宽比例 */
+        .exam-table th:nth-child(1), 
+        .exam-table td:nth-child(1) {
+            width: 25%;
+        }
+        
+        .exam-table th:nth-child(2), 
+        .exam-table td:nth-child(2),
+        .exam-table th:nth-child(3), 
+        .exam-table td:nth-child(3) {
+            width: 15%;
+        }
+        
+        .exam-table th:nth-child(4), 
+        .exam-table td:nth-child(4) {
+            width: 10%;
+            text-align: center;
+        }
+        
+        .exam-table th:nth-child(5), 
+        .exam-table td:nth-child(5) {
+            width: 10%;
+        }
+        
+        .exam-table th:nth-child(6), 
+        .exam-table td:nth-child(6) {
+            width: 25%;
+            text-align: left;
+        }
+        
+        /* 改进行高 */
+        .exam-table tr {
+            height: 54px;
+        }
+        
+        /* 调整按钮组间距 */
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            flex-wrap: nowrap;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+            white-space: nowrap;
+            min-width: 70px;
+            text-align: center;
+        }
+        
+        /* 添加响应式设计 */
+        @media screen and (max-width: 992px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .page-title h1 {
+                font-size: 20px;
+            }
+            
+            .exam-table th, 
+            .exam-table td {
+                padding: 10px 12px;
+            }
+        }
+        
+        @media screen and (max-width: 768px) {
+            .search-input {
+                max-width: 100%;
+            }
+            
+            .tab-item {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            
+            /* 在小屏幕上可以考虑隐藏某些列 */
+            .exam-table th:nth-child(2), 
+            .exam-table td:nth-child(2) {
+                display: none;
+            }
+        }
+        
+        /* 添加面包屑导航样式 */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #b0b0b0;
+        }
+        
+        .breadcrumb a {
+            color: #5e81ac;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb .separator {
+            margin: 0 10px;
+            color: #666;
+        }
+        
+        /* 添加到my_exams.html中以统一按钮样式 */
+        .breadcrumb button {
+            background: none;
+            border: none;
+            color: #5e81ac;
+            font-size: 14px;
+            padding: 0;
+            cursor: pointer;
+        }
+        
+        .breadcrumb button:hover {
+            text-decoration: underline;
+        }
+        
+        /* 特别调整操作列，如果需要的话 */
+        .exam-table th:last-child,
+        .exam-table td:last-child {
+            text-align: right;
+            min-width: 200px;
+            white-space: nowrap;
+        }
+        
+        /* 如果有居中对齐的数据列，可以单独设置 */
+        .exam-table th.centered,
+        .exam-table td.centered {
+            text-align: center;
+        }
+        
+        /* 状态文本样式 - 优化后的版本 */
+        .status-text {
+            display: inline-block;
+            font-weight: 500;
+            font-size: 14px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            position: relative;
+        }
+        
+        .status-text::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        
+        .status-pending {
+            color: #ebcb8b;
+            background-color: rgba(235, 203, 139, 0.1);
+        }
+        
+        .status-pending::before {
+            background-color: #ebcb8b;
+        }
+        
+        .status-completed {
+            color: #a3be8c;
+            background-color: rgba(163, 190, 140, 0.1);
+        }
+        
+        .status-completed::before {
+            background-color: #a3be8c;
+        }
+        
+        .status-failed {
+            color: #bf616a;
+            background-color: rgba(191, 97, 106, 0.1);
+        }
+        
+        .status-failed::before {
+            background-color: #bf616a;
+        }
+        
+        .status-expired {
+            color: #999;
+            background-color: rgba(153, 153, 153, 0.1);
+        }
+        
+        .status-expired::before {
+            background-color: #999;
+        }
+        
+        /* 操作按钮样式 */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background-color: #434c5e;
+            color: #e5e9f0;
+            border-radius: 4px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-right: 5px;
+        }
+        
+        .action-btn:hover {
+            background-color: #4c566a;
+            transform: translateY(-2px);
+        }
+        
+        .action-btn i {
+            margin-right: 5px;
+        }
+        
+        /* 操作列和按钮的左对齐 */
+        .exam-table th:last-child,
+        .exam-table td:last-child {
+            text-align: left;
+        }
+        
+        /* 确保表格布局合理 */
+        .exam-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .exam-table th {
+            background-color: #2e3440;
+            padding: 12px 15px;
+            font-weight: 500;
+            text-align: left;
+            color: #e5e9f0;
+            font-size: 15px;
+        }
+        
+        .exam-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #3b4252;
+            vertical-align: middle;
+            font-size: 15px;
+        }
+        
+        .exam-table tr:hover {
+            background-color: #2a2a2a;
+        }
+        
+        .exam-name {
+            font-weight: 500;
+        }
+        
+        /* 隐藏面包屑上方的"我的考试"标题 */
+        .page-title h1 {
+            display: none;
+        }
+        
+        /* 如果页面结构是直接使用h1标签，则使用下面的样式 */
+        h1.page-title {
+            display: none;
+        }
+        
+        /* 统一字体大小 */
+        body,
+        .exam-table,
+        .exam-table th,
+        .exam-table td,
+        .tab-item {
+            font-size: 15px !important;
+        }
+        
+        /* 确保按钮文字大小一致 */
+        .btn,
+        .action-btn {
+            font-size: 14px !important;
+        }
+        
+        /* 针对可能被覆盖的小元素设置字体大小 */
+        .exam-table .exam-name {
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .status-text {
+            font-size: 14px !important;
+        }
+        
+        /* 其他可能需要调整的元素 */
+        .breadcrumb {
+            font-size: 14px;
+        }
+        
+        .filter-label {
+            font-size: 14px;
+        }
+        
+        /* 更新导航栏样式 - 增加选择器优先级 */
+        body .header .nav-item {
+            font-size: 15px;
+            margin-left: 25px;
+        }
+        
+        body .header .nav-item a {
+            font-size: 15px;
+            color: #e0e0e0;
+        }
+        
+        body .header .logo {
+            font-size: 18px;
+        }
+        
+        body .header .user-info {
+            font-size: 15px;
+        }
+        
+        /* 隐藏面包屑下方的"学习路线"标题 */
+        .container .page-title h1 {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-text">logo</span>
+            <span>新威课堂</span>
+        </div>
+        <div class="nav-items">
+            <div class="nav-item">
+                <a href="dashboard.html">首页</a>
+            </div>
+            <div class="nav-item">
+                <a href="learning_paths.html">学习路线</a>
+            </div>
+            <div class="nav-item active">
+                <a href="my_exams.html">我的考试</a>
+            </div>
+        </div>
+        <div class="user-info">
+            <span>张三</span>
+            <div class="avatar" style="background-image: url('https://placeholder.pics/svg/36x36/DEDEDE/555555/头像')"></div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="container">
+        <div class="page-title">
+            <h1>我的考试</h1>
+        </div>
+        
+        <!-- 面包屑导航 -->
+        <div class="breadcrumb">
+            <a href="dashboard.html">首页</a>
+            <span class="separator">/</span>
+            <span>我的考试</span>
+        </div>
+        
+        <!-- 搜索栏 -->
+        <div class="search-bar">
+            <input type="text" class="search-input" placeholder="搜索考试名称...">
+        </div>
+        
+        <!-- 标签页 -->
+        <div class="exam-tabs">
+            <div class="tab-item active" data-status="all">全部考试</div>
+            <div class="tab-item" data-status="not-started">未开始</div>
+            <div class="tab-item" data-status="ongoing">进行中</div>
+            <div class="tab-item" data-status="completed">已完成</div>
+            <div class="tab-item" data-status="ended">已结束</div>
+        </div>
+        
+        <!-- 考试表格 -->
+        <div class="exam-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>考试名称</th>
+                        <th>开始时间</th>
+                        <th>截止时间</th>
+                        <th>已参与人数</th>
+                        <th>状态</th>
+                        <th style="text-align: left;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="exam-list-body">
+                    <!-- 未开始 × 未考试 -->
+                    <tr>
+                        <td class="exam-name">新产品知识测试</td>
+                        <td>2023-05-15 09:00</td>
+                        <td>2023-05-31 23:59</td>
+                        <td>42</td>
+                        <td><span class="status-text status-pending">未开始</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-default btn-sm disabled" disabled>去考试</button>
+                                <button class="btn btn-default btn-sm view-leaderboard-btn">排行榜</button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 进行中 × 未考试 -->
+                    <tr>
+                        <td class="exam-name">企业内部安全培训考试</td>
+                        <td>2023-04-10 10:00</td>
+                        <td>2023-04-30 18:00</td>
+                        <td>156</td>
+                        <td><span class="status-text status-ongoing">进行中</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary btn-sm take-exam-btn">去考试</button>
+                                <button class="btn btn-default btn-sm view-leaderboard-btn">排行榜</button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 进行中 × 已通过 -->
+                    <tr>
+                        <td class="exam-name">企业基础知识培训考试</td>
+                        <td>2023-04-20 18:00</td>
+                        <td>2023-04-25 18:00</td>
+                        <td>180</td>
+                        <td><span class="status-text status-completed">已通过</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary btn-sm take-exam-btn">再次考试</button>
+                                <button class="btn btn-default btn-sm view-records-btn">考试记录</button>
+                                <button class="btn btn-default btn-sm view-leaderboard-btn">排行榜</button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 进行中 × 未通过 -->
+                    <tr>
+                        <td class="exam-name">产品知识进阶考核</td>
+                        <td>2023-04-25 18:00</td>
+                        <td>2023-04-25 18:00</td>
+                        <td>150</td>
+                        <td><span class="status-text status-failed">未通过</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary btn-sm take-exam-btn">重新考试</button>
+                                <button class="btn btn-default btn-sm view-records-btn">考试记录</button>
+                                <button class="btn btn-default btn-sm view-leaderboard-btn">排行榜</button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 已完成 × 已通过 -->
+                    <tr>
+                        <td class="exam-name">员工入职必备知识</td>
+                        <td>2023-03-15 18:00</td>
+                        <td>2023-03-15 18:00</td>
+                        <td>200</td>
+                        <td><span class="status-text status-completed">已完成</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-default btn-sm view-records-btn">考试记录</button>
+                                <button class="btn btn-default btn-sm view-leaderboard-btn">排行榜</button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 已结束 × 未通过 -->
+                    <tr>
+                        <td class="exam-name">中级业务技能考核</td>
+                        <td>2023-03-30 18:00</td>
+                        <td>2023-03-30 18:00</td>
+                        <td>150</td>
+                        <td><span class="status-text status-failed">未通过</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-default btn-sm view-records-btn">考试记录</button>
+                                <button class="btn btn-default btn-sm view-leaderboard-btn">排行榜</button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 已结束 × 未考试 -->
+                    <tr>
+                        <td class="exam-name">季度业绩评估考试</td>
+                        <td>2023-03-10 18:00</td>
+                        <td>2023-03-10 18:00</td>
+                        <td>100</td>
+                        <td><span class="status-text status-expired">已结束</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-default btn-sm view-leaderboard-btn">排行榜</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 空状态 (默认隐藏) -->
+        <div class="empty-state" style="display: none;">
+            <img src="https://placeholder.pics/svg/100x100/DEDEDE/555555/无数据" alt="无数据">
+            <p>暂无考试数据</p>
+        </div>
+        
+        <!-- 分页 -->
+        <div class="pagination">
+            <div class="page-item"><i class="fas fa-chevron-left"></i></div>
+            <div class="page-item active">1</div>
+            <div class="page-item">2</div>
+            <div class="page-item">3</div>
+            <div class="page-item"><i class="fas fa-chevron-right"></i></div>
+        </div>
+    </div>
+
+    <script src="js/all-pages.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为"去考试"按钮添加点击事件
+            const takeExamBtns = document.querySelectorAll('.take-exam-btn');
+            takeExamBtns.forEach(btn => {
+                if (!btn.classList.contains('disabled')) {
+                    btn.addEventListener('click', function() {
+                        const examRow = btn.closest('tr');
+                        const examName = examRow.querySelector('.exam-name').textContent;
+                        const examId = examRow.getAttribute('data-exam-id') || '1';
+                        window.location.href = `current_exam.html?examId=${examId}&examName=${encodeURIComponent(examName)}`;
+                    });
+                }
+            });
+
+            // 为"考试记录"按钮添加点击事件
+            const viewRecordsBtns = document.querySelectorAll('.view-records-btn');
+            viewRecordsBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const examRow = btn.closest('tr');
+                    const examName = examRow.querySelector('.exam-name').textContent;
+                    const examId = examRow.getAttribute('data-exam-id') || '1';
+                    window.location.href = `exam_records.html?examId=${examId}&examName=${encodeURIComponent(examName)}`;
+                });
+            });
+
+            // 为"排行榜"按钮添加点击事件
+            const viewLeaderboardBtns = document.querySelectorAll('.view-leaderboard-btn');
+            viewLeaderboardBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const examRow = btn.closest('tr');
+                    const examName = examRow.querySelector('.exam-name').textContent;
+                    const examId = examRow.getAttribute('data-exam-id') || '1';
+                    window.location.href = `leaderboard.html?examId=${examId}&examName=${encodeURIComponent(examName)}`;
+                });
+            });
+
+            // 标签页切换功能
+            const tabItems = document.querySelectorAll('.tab-item');
+            tabItems.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 移除所有标签的active类
+                    tabItems.forEach(t => t.classList.remove('active'));
+                    // 给当前点击的标签添加active类
+                    this.classList.add('active');
+                    
+                    // 根据标签筛选考试列表
+                    const status = this.getAttribute('data-status');
+                    filterExamsByStatus(status);
+                });
+            });
+
+            // 根据状态筛选考试
+            function filterExamsByStatus(status) {
+                const examRows = document.querySelectorAll('#exam-list-body tr');
+                
+                examRows.forEach(row => {
+                    const statusText = row.querySelector('.status-text').className;
+                    
+                    if (status === 'all') {
+                        row.style.display = '';
+                    } else if (statusText.includes(status)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // 检查是否有可见行，如果没有则显示空状态
+                checkEmptyState();
+            }
+
+            // 检查是否需要显示空状态
+            function checkEmptyState() {
+                const visibleRows = document.querySelectorAll('#exam-list-body tr:not([style*="display: none"])');
+                const emptyState = document.querySelector('.empty-state');
+                
+                if (visibleRows.length === 0 && emptyState) {
+                    emptyState.style.display = 'block';
+                    document.querySelector('.exam-table').style.display = 'none';
+                    document.querySelector('.pagination').style.display = 'none';
+                } else if (emptyState) {
+                    emptyState.style.display = 'none';
+                    document.querySelector('.exam-table').style.display = 'block';
+                    document.querySelector('.pagination').style.display = 'flex';
+                }
+            }
+
+            // 搜索功能
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchText = this.value.toLowerCase();
+                    const examRows = document.querySelectorAll('#exam-list-body tr');
+                    
+                    examRows.forEach(row => {
+                        const examName = row.querySelector('.exam-name').textContent.toLowerCase();
+                        
+                        if (examName.includes(searchText)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                    
+                    checkEmptyState();
+                });
+            }
+
+            // 分页功能
+            const pageItems = document.querySelectorAll('.page-item');
+            pageItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (!this.classList.contains('active') && !this.querySelector('i')) {
+                        pageItems.forEach(p => p.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // 这里可以添加分页加载逻辑
+                        console.log(`切换到第 ${this.textContent} 页`);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
