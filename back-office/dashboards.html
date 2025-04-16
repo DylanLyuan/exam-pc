@@ -1,0 +1,2925 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考试看板</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #6e8cff;
+            --secondary-color: #2ce69b;
+            --warning-color: #ffd43b;
+            --danger-color: #ff6b6b;
+            --info-color: #4bd5e7;
+            --dark-bg: #1a1a2e;
+            --dark-card: #222438;
+            --dark-header: #16213e;
+            --dark-text: #e6e6e6;
+            --dark-muted: #a0a0a0;
+            --dark-border: #2a2a4a;
+        }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+            font-size: 12px;
+            font-weight: normal;
+        }
+        .dashboard-container {
+            padding: 10px;
+        }
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.3);
+            margin-bottom: 5px;
+            margin-top: 0;
+            border: none;
+            height: 100%;
+            background-color: var(--dark-card);
+            border: 1px solid var(--dark-border);
+        }
+        .card-header {
+            background-color: var(--dark-header);
+            border-bottom: 1px solid var(--dark-border);
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 7px 7px 0 0;
+        }
+        .card-header h5 {
+            margin: 0;
+            font-weight: normal;
+            color: var(--dark-text);
+            font-size: 12px;
+        }
+        .card-body {
+            padding: 10px;
+        }
+        .stats-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            border-radius: 8px;
+            background-color: var(--dark-card);
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            height: 100%;
+            border: 1px solid var(--dark-border);
+        }
+        .stats-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.3);
+        }
+        .stats-label {
+            font-size: 12px;
+            font-weight: normal;
+            color: var(--dark-muted);
+            margin-bottom: 1px;
+            text-align: center;
+        }
+        .stats-value {
+            font-size: 14px;
+            font-weight: normal;
+            color: var(--dark-text);
+        }
+        .stats-item.primary .stats-value { color: var(--primary-color); }
+        .stats-item.success .stats-value { color: var(--secondary-color); }
+        .stats-item.warning .stats-value { color: var(--warning-color); }
+        .stats-item.danger .stats-value { color: var(--danger-color); }
+        .stats-item.info .stats-value { color: var(--info-color); }
+        
+        .view-toggle {
+            background-color: var(--dark-header);
+            border: 1px solid var(--dark-border);
+            border-radius: 4px;
+            padding: 4px;
+        }
+        .view-toggle button {
+            background: none;
+            border: none;
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 12px;
+            color: var(--dark-muted);
+            font-weight: normal;
+        }
+        .view-toggle button.active {
+            background-color: var(--primary-color);
+            color: #000;
+        }
+        .chart-container {
+            position: relative;
+            height: 210px;
+            width: 100%;
+        }
+        .list-view {
+            display: none;
+            margin-top: 8px;
+        }
+        .list-view table {
+            width: 100%;
+            color: var(--dark-text);
+        }
+        .list-view table th,
+        .list-view table td {
+            padding: 4px 8px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: normal;
+            border-color: var(--dark-border);
+        }
+        .list-view table th {
+            background-color: var(--dark-header);
+            font-weight: normal;
+            color: var(--dark-muted);
+        }
+        .chart-view {
+            display: block;
+        }
+        .charts-row {
+            margin-bottom: 0;
+            margin-top: 5px;
+        }
+        h1 {
+            font-size: 18px;
+            font-weight: normal;
+            color: var(--dark-text);
+        }
+        .table-striped > tbody > tr:nth-of-type(odd) > * {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--dark-text);
+        }
+        .table {
+            --bs-table-bg: transparent;
+            --bs-table-striped-bg: rgba(255, 255, 255, 0.05);
+            --bs-table-striped-color: var(--dark-text);
+            --bs-table-active-bg: rgba(255, 255, 255, 0.1);
+            --bs-table-active-color: var(--dark-text);
+            --bs-table-hover-bg: rgba(255, 255, 255, 0.075);
+            --bs-table-hover-color: var(--dark-text);
+            border-color: var(--dark-border);
+        }
+        /* 添加下钻相关样式 */
+        #difficultyChart {
+            cursor: pointer;
+        }
+        .back-button {
+            display: none;
+            background-color: rgba(110, 140, 255, 0.2);
+            border: 1px solid var(--dark-border);
+            border-radius: 4px;
+            color: var(--dark-text);
+            padding: 3px 8px;
+            font-size: 12px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        #skill-detail-view {
+            display: none;
+        }
+        .detail-header {
+            display: flex;
+            align-items: center;
+        }
+        /* 添加暗色模式表格样式，确保文字可见 */
+        .text-light {
+            color: var(--dark-text) !important;
+        }
+        #detail-list-view .table-striped > tbody > tr:nth-of-type(odd) > * {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--dark-text);
+        }
+        #detail-list-view .table-striped > tbody > tr:nth-of-type(even) > * {
+            background-color: transparent;
+            color: var(--dark-text);
+        }
+        .list-view .table th {
+            background-color: var(--dark-header);
+            color: var(--dark-muted);
+        }
+        /* 排行榜切换按钮样式 */
+        .rank-toggle {
+            background-color: var(--dark-header);
+            border: 1px solid var(--dark-border);
+            border-radius: 4px;
+            padding: 4px;
+        }
+        .rank-toggle button {
+            background: none;
+            border: none;
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 12px;
+            color: var(--dark-muted);
+            font-weight: normal;
+        }
+        .rank-toggle button.active {
+            background-color: var(--primary-color);
+            color: #000;
+        }
+        
+        /* 排名样式 */
+        .rank-1, .rank-2, .rank-3 {
+            font-weight: bold;
+        }
+        .rank-1 {
+            color: gold;
+        }
+        .rank-2 {
+            color: silver;
+        }
+        .rank-3 {
+            color: #cd7f32; /* 铜色 */
+        }
+        
+        /* 通过考试徽章 */
+        .passed-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            background-color: rgba(44, 230, 155, 0.2);
+            color: var(--secondary-color);
+        }
+        /* 可排序表格样式 */
+        .table-sortable .sortable {
+            cursor: pointer;
+            position: relative;
+        }
+        .table-sortable .sortable:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sort-icon {
+            font-size: 10px;
+            margin-left: 5px;
+            color: var(--dark-muted);
+        }
+        .sort-asc .sort-icon:after {
+            content: "↑";
+            color: var(--primary-color);
+        }
+        .sort-desc .sort-icon:after {
+            content: "↓";
+            color: var(--primary-color);
+        }
+        /* 针对排行榜的暗黑模式适配 */
+        #ranking-body td {
+            color: var(--dark-text);
+        }
+        .rank-1, .rank-2, .rank-3 {
+            text-shadow: 0px 0px 3px rgba(0, 0, 0, 0.5);
+        }
+        /* 添加或修改以下CSS样式，确保暗黑模式完全适配 */
+        .table-striped tbody tr td {
+            color: var(--dark-text);
+        }
+        /* 确保所有表格单元格文本可见 */
+        .table td, .table th {
+            padding: 4px 8px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .table-compact tbody tr td, 
+        .table-compact tbody tr th, 
+        .table-compact thead tr th {
+            padding: 3px 6px;
+            line-height: 1.2;
+        }
+        /* 改进排序图标在暗黑模式下的可见性 */
+        .sort-icon {
+            display: inline-block;
+            font-size: 10px;
+            margin-left: 5px;
+            color: var(--dark-muted);
+        }
+        /* 改进部门详情表格在暗黑模式下的外观 */
+        #department-detail-body td {
+            color: var(--dark-text) !important;
+        }
+        /* 确保模态框中的文本在暗黑模式下可见 */
+        .modal-content {
+            background-color: var(--dark-card);
+            color: var(--dark-text);
+        }
+        /* 改进排行榜在暗黑模式下的可见性 */
+        #ranking-body tr td {
+            color: var(--dark-text) !important;
+        }
+        /* 增强暗黑模式下交互元素的视觉反馈 */
+        .stats-item:hover, tr[data-department]:hover, .table-sortable .sortable:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        /* 改进返回按钮在暗黑模式下的样式 */
+        .back-button:hover {
+            background-color: rgba(110, 140, 255, 0.4);
+        }
+        /* 确保图表工具提示在暗黑模式下可见 */
+        #difficultyChart, #departmentChart, #questionTypeChart, #accuracyChart, #skillDetailChart {
+            color: var(--dark-text);
+        }
+        /* 减少部门分析图表高度 */
+        #department-chart-view .chart-container {
+            height: 240px !important;
+        }
+        /* 减少列表和图标之间的空隙 */
+        .list-view {
+            margin-top: 8px;
+        }
+        /* 确保列表和图表内容紧凑 */
+        .table-responsive {
+            margin-bottom: 0;
+        }
+        /* 调整行间距 */
+        .row {
+            margin-right: -2.5px;
+            margin-left: -2.5px;
+        }
+        /* 调整列间距 */
+        .col-md-2, .col-md-4, .col-md-6, .col-sm-4, .col-6 {
+            padding-right: 2.5px;
+            padding-left: 2.5px;
+        }
+        /* 修正部门详情和排行榜的上边距 */
+        .row.mt-4 {
+            margin-top: 5px !important;
+        }
+        /* 整体情况卡片下边距调整 */
+        .card.mb-4 {
+            margin-bottom: 5px;
+        }
+        /* 减少标题的下边距 */
+        h1.mb-4 {
+            margin-bottom: 5px !important;
+        }
+        /* 修改整体情况卡片的下边距，确保与图表区域保持5px间距 */
+        .card.mb-1, .card.mb-4 {
+            margin-bottom: 5px !important;
+        }
+        /* 确保统一间距 */
+        .charts-row {
+            margin-top: 5px !important;
+        }
+        /* 确保标题与第一个卡片的间距也是5px */
+        h1.mb-4, h1.mb-1 {
+            margin-bottom: 5px !important;
+        }
+        /* 部门详情区域的上边距 */
+        .row.mt-1, .row.mt-4 {
+            margin-top: 5px !important;
+        }
+        /* 添加模态框样式优化 */
+        .modal-header {
+            background-color: var(--dark-header);
+            border-bottom: 1px solid var(--dark-border);
+            padding: 10px 15px;
+        }
+        .modal-footer {
+            background-color: var(--dark-header);
+            border-top: 1px solid var(--dark-border);
+            padding: 8px 15px;
+        }
+        .modal-body {
+            padding: 8px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .modal-title {
+            font-size: 14px;
+            color: var(--dark-text);
+        }
+        .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+        /* 表格状态样式优化 */
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            text-align: center;
+        }
+        .status-passed {
+            background-color: rgba(44, 230, 155, 0.2);
+            color: var(--secondary-color);
+        }
+        .status-failed {
+            background-color: rgba(255, 107, 107, 0.2);
+            color: var(--danger-color);
+        }
+        .status-absent {
+            background-color: rgba(255, 212, 59, 0.2);
+            color: var(--warning-color);
+        }
+        /* 模态框动画优化 */
+        .modal.fade .modal-dialog {
+            transition: transform 0.2s ease-out;
+        }
+        /* 模态框表格样式优化 */
+        .modal-table th {
+            position: sticky;
+            top: 0;
+            background-color: var(--dark-header);
+            z-index: 2;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.075);
+        }
+        /* 关闭按钮样式优化 */
+        .btn-secondary {
+            background-color: var(--dark-border);
+            border-color: var(--dark-border);
+            font-size: 12px;
+            padding: 4px 12px;
+        }
+        .btn-secondary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        /* 分页按钮样式 */
+        .page-btn {
+            background-color: var(--dark-header);
+            border: 1px solid var(--dark-border);
+            color: var(--dark-text);
+            margin: 0 2px;
+            font-size: 12px;
+            padding: 3px 10px;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background-color: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-container {
+            background-color: var(--dark-card);
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--dark-border);
+        }
+
+        /* 修正模态框暗黑模式文本可见性 */
+        .modal-body {
+            color: var(--dark-text);
+        }
+
+        .modal-footer .btn {
+            margin-left: 5px;
+        }
+
+        /* 确保表格内容在暗黑模式下可见 */
+        .modal-table td {
+            color: var(--dark-text) !important;
+        }
+
+        .modal-table th {
+            color: var(--dark-muted);
+            background-color: var(--dark-header) !important;
+        }
+
+        /* 空数据提示样式 */
+        .empty-data-message {
+            padding: 20px;
+            text-align: center;
+            color: var(--dark-muted);
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        /* 状态徽章大小调整 */
+        .status-badge {
+            min-width: 60px;
+        }
+
+        /* 筛选面板样式优化 - 暗黑模式适配 */
+        .filter-panel {
+            margin-bottom: 5px !important; /* 确保与下方指标区域保持5px距离 */
+        }
+
+        /* 表单控件暗黑模式增强 */
+        .form-control, .form-select {
+            background-color: var(--dark-bg) !important; /* 使用更深色背景增加对比度 */
+            border-color: var(--dark-border);
+            color: var(--dark-text) !important; /* 强制使用亮色文本 */
+            font-size: 12px;
+            padding: 5px 8px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--dark-bg) !important;
+            border-color: var(--primary-color);
+            color: var(--dark-text) !important;
+            box-shadow: 0 0 0 0.2rem rgba(110, 140, 255, 0.25);
+        }
+
+        /* 下拉选择框暗黑模式增强 */
+        .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e6e6e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
+            background-color: var(--dark-bg) !important;
+        }
+
+        /* 多选下拉框样式优化 */
+        select[multiple] {
+            height: 80px;
+            overflow-y: auto;
+        }
+
+        select[multiple] option {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+            padding: 5px 8px;
+        }
+
+        select[multiple] option:checked {
+            background-color: rgba(110, 140, 255, 0.3) !important;
+            color: #ffffff !important;
+        }
+
+        select[multiple] option:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 日期选择器暗黑模式适配 */
+        input[type="date"] {
+            color-scheme: dark; /* 使用暗色主题 */
+        }
+
+        /* 确保筛选按钮颜色对比度足够 */
+        .btn-filter {
+            background-color: var(--dark-header);
+            border: 1px solid var(--dark-border);
+            color: var(--dark-text);
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .btn-filter:hover {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+
+        /* 确保卡片间距一致 */
+        .filter-panel .card {
+            margin-bottom: 5px !important;
+        }
+
+        /* 标签样式增强 */
+        .filter-label {
+            display: block;
+            font-size: 12px;
+            color: var(--dark-text);
+            margin-bottom: 5px;
+            font-weight: 500; /* 稍微加粗使其更清晰 */
+        }
+
+        /* 筛选区域之后的间隔控制 */
+        .filter-spacer {
+            height: 5px !important;
+            display: block !important;
+        }
+
+        /* 筛选按钮样式增强 */
+        .filter-actions .btn {
+            padding: 4px 12px;
+            font-size: 12px;
+        }
+
+        .filter-actions .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .filter-actions .btn-secondary {
+            background-color: var(--dark-header);
+            border-color: var(--dark-border);
+            color: var(--dark-text);
+        }
+
+        /* 响应式布局调整 */
+        @media (max-width: 768px) {
+            .filter-panel .col-md-3 {
+                width: 50%;
+                margin-bottom: 10px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .filter-panel .col-md-3 {
+                width: 100%;
+            }
+        }
+
+        /* 复选下拉框组件样式 */
+        .multiselect-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .multiselect-btn {
+            text-align: left;
+            padding: 5px 8px;
+            background-color: var(--dark-bg) !important;
+            border-color: var(--dark-border);
+            color: var(--dark-text) !important;
+            cursor: pointer;
+            position: relative;
+            font-size: 12px;
+        }
+
+        .multiselect-placeholder {
+            color: var(--dark-muted);
+        }
+
+        .multiselect-selected {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: calc(100% - 20px);
+        }
+
+        .dropdown-icon {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: var(--dark-text);
+            transition: transform 0.2s;
+        }
+
+        .multiselect-dropdown.open .dropdown-icon {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .multiselect-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            background-color: var(--dark-bg);
+            border: 1px solid var(--dark-border);
+            border-radius: 4px;
+            margin-top: 2px;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .multiselect-dropdown.open .multiselect-dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .position-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--dark-text);
+            margin: 0;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .position-checkbox input[type="checkbox"] {
+            margin: 0;
+            accent-color: var(--primary-color);
+        }
+
+        /* 增强表头可见性 */
+        .table th {
+            background-color: var(--dark-header) !important;
+            color: var(--dark-text) !important; /* 使用亮色而非暗色 */
+            font-weight: 500 !important;
+            border-bottom: 1px solid var(--dark-border) !important;
+            white-space: nowrap;
+        }
+
+        /* 特别针对部门分析和考试排行榜表头 */
+        #department-list-view th,
+        #ranking-body th,
+        .table-sortable th {
+            color: var(--dark-text) !important;
+            background-color: var(--dark-header) !important;
+            padding: 6px 8px !important;
+        }
+
+        /* 排序图标增强 */
+        .sort-icon {
+            display: inline-block;
+            font-size: 10px;
+            margin-left: 5px;
+            color: var(--dark-text) !important; /* 修改为亮色 */
+        }
+
+        .sort-asc .sort-icon:after {
+            content: "↑";
+            color: var(--primary-color);
+        }
+
+        .sort-desc .sort-icon:after {
+            content: "↓";
+            color: var(--primary-color);
+        }
+
+        /* 统一筛选条件组件提示文本样式 */
+        ::placeholder {
+            color: var(--dark-muted) !important;
+            opacity: 0.7 !important;
+        }
+
+        /* 日期输入框提示文本 */
+        input[type="date"]::-webkit-datetime-edit-text,
+        input[type="date"]::-webkit-datetime-edit-month-field,
+        input[type="date"]::-webkit-datetime-edit-day-field,
+        input[type="date"]::-webkit-datetime-edit-year-field {
+            color: var(--dark-muted);
+        }
+
+        input[type="date"]:in-range::-webkit-datetime-edit-text,
+        input[type="date"]:in-range::-webkit-datetime-edit-month-field,
+        input[type="date"]:in-range::-webkit-datetime-edit-day-field,
+        input[type="date"]:in-range::-webkit-datetime-edit-year-field {
+            color: var(--dark-text);
+        }
+
+        /* 未选择日期时显示提示文本 */
+        input[type="date"]:not([value=""]):not(:focus):not(:valid):before {
+            color: var(--dark-muted);
+            content: attr(placeholder);
+        }
+
+        /* 确保表单控件文本在暗黑模式下可见 */
+        .form-control, .form-select {
+            background-color: var(--dark-bg) !important;
+            color: var(--dark-text) !important;
+            border-color: var(--dark-border);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--dark-bg) !important;
+            color: var(--dark-text) !important;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(110, 140, 255, 0.25);
+        }
+
+        /* 多选下拉框选项文本颜色 */
+        .multiselect-placeholder {
+            color: var(--dark-muted) !important;
+            opacity: 0.7;
+        }
+
+        /* 未选择日期的样式 */
+        input[type="date"]:invalid {
+            color: var(--dark-muted);
+        }
+
+        /* 选择了日期的样式 */
+        input[type="date"]:valid {
+            color: var(--dark-text);
+        }
+
+        /* 调整部门分析和考试排行榜的样式以适应新的宽度比例 */
+        @media (min-width: 768px) {
+            /* 确保考试排行榜表格能够适应较窄的宽度 */
+            .col-md-4 .table th, 
+            .col-md-4 .table td {
+                padding: 3px 5px;
+                font-size: 11px;
+            }
+            
+            /* 确保部门分析图表高度适当 */
+            .col-md-8 .chart-container {
+                height: 340px !important;
+            }
+            
+            /* 排行榜标题和切换按钮可能需要调整 */
+            .col-md-4 .card-header {
+                padding: 10px 12px;
+            }
+            
+            .col-md-4 .rank-toggle button {
+                padding: 3px 6px;
+                font-size: 11px;
+            }
+            
+            /* 确保部门分析表格可以水平滚动 */
+            .col-md-8 .list-view {
+                overflow-x: auto;
+            }
+            
+            /* 部门详情视图的调整 */
+            #department-detail-view .table-responsive {
+                max-height: 320px;
+                overflow-y: auto;
+            }
+        }
+
+        /* 改进表头可见性 */
+        .table th {
+            background-color: var(--dark-header) !important;
+            color: var(--dark-text) !important;
+            font-weight: 500 !important;
+            white-space: nowrap;
+        }
+
+        /* 统一卡片间距为5px */
+        .card {
+            margin-bottom: 5px !important;
+        }
+
+        .row {
+            margin-bottom: 0 !important;
+            margin-top: 0 !important;
+        }
+
+        .charts-row {
+            margin-top: 5px !important;
+        }
+
+        /* 调整行间距 */
+        .row {
+            margin-right: -2.5px !important;
+            margin-left: -2.5px !important;
+        }
+
+        /* 调整列间距 */
+        .col-md-2, .col-md-3, .col-md-4, .col-md-6, .col-md-8, .col-sm-4, .col-6 {
+            padding-right: 2.5px !important;
+            padding-left: 2.5px !important;
+        }
+
+        /* 确保所有mt-n类的样式被覆盖 */
+        .mt-1, .mt-2, .mt-3, .mt-4, .mt-5 {
+            margin-top: 5px !important;
+        }
+
+        /* 确保所有mb-n类的样式被覆盖 */
+        .mb-1, .mb-2, .mb-3, .mb-4, .mb-5 {
+            margin-bottom: 5px !important;
+        }
+
+        /* 强制应用于所有可能影响间距的元素 */
+        .dashboard-container > div:not(:first-child) {
+            margin-top: 5px !important;
+        }
+
+        /* 筛选面板与下方内容的间距 */
+        .filter-panel {
+            margin-bottom: 5px !important;
+        }
+
+        /* 卡片内部元素的间距调整 */
+        .card-body {
+            padding: 10px !important;
+        }
+
+        .card-header {
+            padding: 10px 15px !important;
+        }
+
+        /* 标题与内容之间的距离 */
+        h1 {
+            margin-bottom: 5px !important;
+        }
+
+        /* 专门处理筛选区域与下方卡片的距离 */
+        .filter-spacer {
+            height: 5px !important;
+        }
+
+        /* 部门分析和排行榜所在行的上边距 */
+        .row.mt-4 {
+            margin-top: 5px !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="mb-0">考试看板</h1>
+            
+            <!-- 右侧筛选按钮 -->
+            <button class="btn btn-filter" id="filter-toggle">
+                <i class="filter-icon">⚙</i> 筛选条件
+            </button>
+        </div>
+        
+        <!-- 筛选面板 -->
+        <div class="filter-panel" id="filter-panel" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h5>筛选条件</h5>
+                    <button class="btn-close btn-close-white" id="close-filter"></button>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- 考试日期筛选 - 开始日期 -->
+                        <div class="col-md-3 mb-3">
+                            <div class="filter-group">
+                                <label class="filter-label">开始日期</label>
+                                <input type="date" class="form-control" id="start-date" placeholder="请选择开始日期">
+                            </div>
+                        </div>
+                        
+                        <!-- 考试日期筛选 - 结束日期 -->
+                        <div class="col-md-3 mb-3">
+                            <div class="filter-group">
+                                <label class="filter-label">结束日期</label>
+                                <input type="date" class="form-control" id="end-date" placeholder="请选择结束日期">
+                            </div>
+                        </div>
+                        
+                        <!-- 修改考试名称标签为考试实例名称 -->
+                        <div class="col-md-3 mb-3">
+                            <div class="filter-group">
+                                <label class="filter-label">考试实例名称</label>
+                                <input type="text" class="form-control" id="exam-name" list="exam-list" placeholder="请输入考试实例名称">
+                                <datalist id="exam-list">
+                                    <option value="基础知识考试">
+                                    <option value="安全生产知识考试">
+                                    <option value="操作技能评估">
+                                    <option value="年度综合考核">
+                                    <option value="岗位资格认证">
+                                </datalist>
+                            </div>
+                        </div>
+                        
+                        <!-- 岗位筛选 -->
+                        <div class="col-md-3 mb-3">
+                            <div class="filter-group">
+                                <label class="filter-label">岗位选择</label>
+                                <div class="multiselect-dropdown">
+                                    <button type="button" class="multiselect-btn form-control text-start d-flex justify-content-between align-items-center">
+                                        <span class="multiselect-placeholder">请选择岗位</span>
+                                        <span class="multiselect-selected"></span>
+                                        <span class="dropdown-icon">▼</span>
+                                    </button>
+                                    <div class="multiselect-dropdown-menu">
+                                        <div class="dropdown-item">
+                                            <label class="position-checkbox">
+                                                <input type="checkbox" value="业务员"> 业务员
+                                            </label>
+                                        </div>
+                                        <div class="dropdown-item">
+                                            <label class="position-checkbox">
+                                                <input type="checkbox" value="技术员"> 技术员
+                                            </label>
+                                        </div>
+                                        <div class="dropdown-item">
+                                            <label class="position-checkbox">
+                                                <input type="checkbox" value="测试员"> 测试员
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 筛选按钮 -->
+                    <div class="filter-actions">
+                        <button class="btn btn-secondary" id="reset-filter">重置</button>
+                        <button class="btn btn-primary" id="apply-filter">应用筛选</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 确保与下方指标区域保持5px的间距 -->
+        <div class="filter-spacer"></div>
+        
+        <!-- 考试整体情况 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>考试整体情况</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <!-- 第一组：人数相关指标 -->
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stats-item">
+                            <div class="stats-label">应考人数</div>
+                            <div class="stats-value">7</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stats-item">
+                            <div class="stats-label">参与人数</div>
+                            <div class="stats-value">7</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stats-item danger">
+                            <div class="stats-label">未通过人数</div>
+                            <div class="stats-value">0</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第二组：率相关指标 -->
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stats-item primary">
+                            <div class="stats-label">参与率</div>
+                            <div class="stats-value">100.00%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stats-item success">
+                            <div class="stats-label">通过率</div>
+                            <div class="stats-value">100.00%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stats-item">
+                            <div class="stats-label">平均正确率</div>
+                            <div class="stats-value">82.14%</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第三组：正确率相关指标 -->
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stats-item">
+                            <div class="stats-label">考试总分</div>
+                            <div class="stats-value">100.0</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stats-item">
+                            <div class="stats-label">合格正确率</div>
+                            <div class="stats-value">60.0%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stats-item info">
+                            <div class="stats-label">平均正确率</div>
+                            <div class="stats-value">82.14%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stats-item success">
+                            <div class="stats-label">最高正确率</div>
+                            <div class="stats-value">95.0%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stats-item warning">
+                            <div class="stats-label">最低正确率</div>
+                            <div class="stats-value">70.0%</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第四组：其他指标 -->
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="stats-item warning">
+                            <div class="stats-label">平均耗时</div>
+                            <div class="stats-value">00:10:51</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 图表区域 - 三个图表在一行 -->
+        <div class="row charts-row">
+            <!-- 难度分析 - 现更改为技能分类 -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="detail-header">
+                            <button class="back-button" id="back-to-skills">返回</button>
+                            <h5 id="skill-title">题目难度分析</h5>
+                        </div>
+                        <div class="view-toggle" id="difficulty-view-toggle">
+                            <button class="active" data-view="chart" data-target="difficulty-chart-view">图表</button>
+                            <button data-view="list" data-target="difficulty-list-view">列表</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="main-skill-view">
+                            <div id="difficulty-chart-view" class="chart-view">
+                                <div class="chart-container">
+                                    <canvas id="difficultyChart"></canvas>
+                                </div>
+                            </div>
+                            <div id="difficulty-list-view" class="list-view">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>难度类型</th>
+                                            <th>题目数量</th>
+                                            <th>正确率</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Q (基础题)</td>
+                                            <td>15</td>
+                                            <td>85%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>S (简单题)</td>
+                                            <td>12</td>
+                                            <td>78%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>H (中等题)</td>
+                                            <td>10</td>
+                                            <td>76%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>T (较难题)</td>
+                                            <td>8</td>
+                                            <td>91%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>P (困难题)</td>
+                                            <td>5</td>
+                                            <td>65%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>A (挑战题)</td>
+                                            <td>3</td>
+                                            <td>87%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>C (综合题)</td>
+                                            <td>7</td>
+                                            <td>79%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- 添加技能详情视图 -->
+                        <div id="skill-detail-view">
+                            <div id="detail-chart-view" class="chart-view">
+                                <div class="chart-container">
+                                    <canvas id="skillDetailChart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div id="detail-list-view" class="list-view">
+                                <div id="skill-detail-table" class="mt-3"></div>
+                            </div>
+                            
+                            <div id="skill-detail-info" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 题型正确率 -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>题型正确率</h5>
+                        <div class="view-toggle">
+                            <button class="active" data-view="chart" data-target="question-type-chart-view">图表</button>
+                            <button data-view="list" data-target="question-type-list-view">列表</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="question-type-chart-view" class="chart-view">
+                            <div class="chart-container">
+                                <canvas id="questionTypeChart"></canvas>
+                            </div>
+                        </div>
+                        <div id="question-type-list-view" class="list-view">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>题型</th>
+                                        <th>正确率</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>单选题</td>
+                                        <td>75.51%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>多选题</td>
+                                        <td>90.48%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>判断题</td>
+                                        <td>84.13%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>填空题</td>
+                                        <td>85.71%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 正确率统计 -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>正确率统计</h5>
+                        <div class="view-toggle">
+                            <button class="active" data-view="chart" data-target="accuracy-chart-view">图表</button>
+                            <button data-view="list" data-target="accuracy-list-view">列表</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="accuracy-chart-view" class="chart-view">
+                            <div class="chart-container">
+                                <canvas id="accuracyChart"></canvas>
+                            </div>
+                        </div>
+                        <div id="accuracy-list-view" class="list-view">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>正确率范围</th>
+                                        <th>占比</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>0-20%</td>
+                                        <td>0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>20-41%</td>
+                                        <td>0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>41-62%</td>
+                                        <td>0%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>62-83%</td>
+                                        <td>57.1%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>83-100%</td>
+                                        <td>42.9%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 将部门分析和考试排行榜放在同一行，调整宽度比例为2:1 -->
+        <div class="row mt-4">
+            <!-- 部门分析 - 占三分之二宽度 -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="detail-header">
+                            <button class="back-button" id="back-to-department" style="display: none;">返回</button>
+                            <h5 id="department-title">部门分析</h5>
+                        </div>
+                        <div class="view-toggle" id="department-view-toggle">
+                            <button class="active" data-view="chart" data-target="department-chart-view">图表</button>
+                            <button data-view="list" data-target="department-list-view">列表</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- 部门主视图 -->
+                        <div id="department-main-view">
+                            <div id="department-chart-view" class="chart-view">
+                                <div class="chart-container" style="height: 300px;">
+                                    <canvas id="departmentChart"></canvas>
+                                </div>
+                            </div>
+                            <div id="department-list-view" class="list-view">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>部门</th>
+                                            <th>平均正确率</th>
+                                            <th>及格率</th>
+                                            <th>参与率</th>
+                                            <th>人数</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr data-department="S1">
+                                            <td>S1</td>
+                                            <td>87.5%</td>
+                                            <td>100%</td>
+                                            <td>95%</td>
+                                            <td>20</td>
+                                        </tr>
+                                        <tr data-department="S2">
+                                            <td>S2</td>
+                                            <td>76.2%</td>
+                                            <td>85%</td>
+                                            <td>90%</td>
+                                            <td>12</td>
+                                        </tr>
+                                        <tr data-department="S3">
+                                            <td>S3</td>
+                                            <td>82.7%</td>
+                                            <td>95%</td>
+                                            <td>100%</td>
+                                            <td>15</td>
+                                        </tr>
+                                        <tr data-department="S4">
+                                            <td>S4</td>
+                                            <td>79.3%</td>
+                                            <td>92%</td>
+                                            <td>88%</td>
+                                            <td>18</td>
+                                        </tr>
+                                        <tr data-department="S5">
+                                            <td>S5</td>
+                                            <td>75.1%</td>
+                                            <td>80%</td>
+                                            <td>100%</td>
+                                            <td>8</td>
+                                        </tr>
+                                        <tr data-department="S6">
+                                            <td>S6</td>
+                                            <td>81.6%</td>
+                                            <td>90%</td>
+                                            <td>85%</td>
+                                            <td>10</td>
+                                        </tr>
+                                        <tr data-department="S7">
+                                            <td>S7</td>
+                                            <td>83.2%</td>
+                                            <td>88%</td>
+                                            <td>92%</td>
+                                            <td>14</td>
+                                        </tr>
+                                        <tr data-department="S8">
+                                            <td>S8</td>
+                                            <td>78.5%</td>
+                                            <td>86%</td>
+                                            <td>96%</td>
+                                            <td>17</td>
+                                        </tr>
+                                        <tr data-department="S9">
+                                            <td>S9</td>
+                                            <td>80.3%</td>
+                                            <td>89%</td>
+                                            <td>93%</td>
+                                            <td>11</td>
+                                        </tr>
+                                        <tr data-department="S10">
+                                            <td>S10</td>
+                                            <td>84.7%</td>
+                                            <td>91%</td>
+                                            <td>94%</td>
+                                            <td>16</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- 部门详情视图 -->
+                        <div id="department-detail-view" style="display: none;">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-sortable">
+                                    <thead>
+                                        <tr>
+                                            <th class="sortable" data-sort="name">姓名 <span class="sort-icon">↕</span></th>
+                                            <th class="sortable" data-sort="accuracy">平均正确率 <span class="sort-icon">↕</span></th>
+                                            <th class="sortable" data-sort="passRate">及格率 <span class="sort-icon">↕</span></th>
+                                            <th class="sortable" data-sort="participationRate">参与率 <span class="sort-icon">↕</span></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="department-detail-body">
+                                        <!-- 部门详情数据将通过JavaScript动态添加 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 考试排行榜 - 占三分之一宽度 -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>考试排行榜</h5>
+                        <div class="rank-toggle">
+                            <button class="active" data-rank="top">前十名</button>
+                            <button data-rank="bottom">后十名</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>排名</th>
+                                        <th>姓名</th>
+                                        <th>平均正确率</th>
+                                        <th>已通过考试</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ranking-body">
+                                    <!-- 排行榜数据将通过JavaScript动态添加 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改模态框HTML结构 -->
+    <div class="modal fade" id="examParticipantModal" tabindex="-1" aria-labelledby="examParticipantModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="examParticipantModalLabel">考试人员详情</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover table-compact modal-table">
+                            <thead>
+                                <tr>
+                                    <th>姓名</th>
+                                    <th class="text-end">正确率</th>
+                                    <th class="text-center">分数/总分</th>
+                                    <th class="text-center">耗时</th>
+                                    <th>考试开始时间</th>
+                                    <th class="text-center">状态</th>
+                                </tr>
+                            </thead>
+                            <tbody id="participant-table-body">
+                                <!-- 数据将通过JavaScript动态加载 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- 统计信息将在这里添加 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载Bootstrap的JavaScript库 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // 图表和列表视图切换功能
+        document.querySelectorAll('.view-toggle button').forEach(button => {
+            button.addEventListener('click', function() {
+                const viewType = this.dataset.view;
+                const targetId = this.dataset.target;
+                const parent = this.closest('.card');
+                
+                // 更新按钮状态
+                parent.querySelectorAll('.view-toggle button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // 处理难度分析卡片特殊情况
+                if (parent.contains(document.getElementById('skill-detail-view'))) {
+                    // 如果是难度分析卡片
+                    if (document.getElementById('skill-detail-view').style.display === 'block') {
+                        // 如果是在详情视图中
+                        if (viewType === 'chart') {
+                            document.getElementById('detail-chart-view').style.display = 'block';
+                            document.getElementById('detail-list-view').style.display = 'none';
+                        } else {
+                            document.getElementById('detail-chart-view').style.display = 'none';
+                            document.getElementById('detail-list-view').style.display = 'block';
+                        }
+                    } else {
+                        // 在主视图中
+                        if (viewType === 'chart') {
+                            document.getElementById('difficulty-chart-view').style.display = 'block';
+                            document.getElementById('difficulty-list-view').style.display = 'none';
+                        } else {
+                            document.getElementById('difficulty-chart-view').style.display = 'none';
+                            document.getElementById('difficulty-list-view').style.display = 'block';
+                        }
+                    }
+                } else {
+                    // 其他卡片的正常处理
+                    const chartView = parent.querySelector('.chart-view');
+                    const listView = parent.querySelector('.list-view');
+                    
+                    if (viewType === 'chart') {
+                        chartView.style.display = 'block';
+                        listView.style.display = 'none';
+                    } else {
+                        chartView.style.display = 'none';
+                        listView.style.display = 'block';
+                    }
+                }
+            });
+        });
+
+        // 设置Chart.js全局配置，适应暗黑模式
+        Chart.defaults.color = '#e6e6e6';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+        Chart.defaults.font.size = 12;
+
+        // 可能需要添加的额外配置
+        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        Chart.defaults.plugins.tooltip.titleColor = '#ffffff';
+        Chart.defaults.plugins.tooltip.bodyColor = '#ffffff';
+
+        // 初始化技能分析图表（原难度分析图表）
+        const difficultyChart = new Chart(
+            document.getElementById('difficultyChart'),
+            {
+                type: 'bar',
+                data: {
+                    labels: ['Q', 'S', 'H', 'T', 'P', 'A', 'C'],
+                    datasets: [
+                        {
+                            label: '平均正确率',
+                            data: [81.5, 86, 76, 91, 65, 87, 79],
+                            backgroundColor: [
+                                'rgba(110, 140, 255, 0.8)',
+                                'rgba(44, 230, 155, 0.8)',
+                                'rgba(255, 212, 59, 0.8)',
+                                'rgba(255, 107, 107, 0.8)',
+                                'rgba(75, 213, 231, 0.8)',
+                                'rgba(189, 147, 249, 0.8)',
+                                'rgba(236, 95, 216, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgb(110, 140, 255)',
+                                'rgb(44, 230, 155)',
+                                'rgb(255, 212, 59)',
+                                'rgb(255, 107, 107)',
+                                'rgb(75, 213, 231)',
+                                'rgb(189, 147, 249)',
+                                'rgb(236, 95, 216)'
+                            ],
+                            borderWidth: 1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '题目数量',
+                            data: [15, 12, 10, 8, 5, 3, 7],
+                            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                            borderColor: 'rgba(255, 255, 255, 0.6)',
+                            borderWidth: 1,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: '正确率',
+                                color: '#e6e6e6'  // 直接使用颜色值而非CSS变量
+                            }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false // 只显示轴刻度不显示网格线
+                            },
+                            title: {
+                                display: true,
+                                text: '题目数量',
+                                color: '#e6e6e6'  // 直接使用颜色值而非CSS变量
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label === '平均正确率') {
+                                        return label + ': ' + context.raw + '%';
+                                    } else {
+                                        return label + ': ' + context.raw + '道';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        );
+
+        // 初始化题型正确率图表
+        const questionTypeChart = new Chart(
+            document.getElementById('questionTypeChart'),
+            {
+                type: 'bar',
+                data: {
+                    labels: ['单选题', '多选题', '判断题', '填空题'],
+                    datasets: [{
+                        label: '正确率',
+                        data: [75.51, 90.48, 84.13, 85.71],
+                        backgroundColor: [
+                            'rgba(110, 140, 255, 0.8)',
+                            'rgba(44, 230, 155, 0.8)',
+                            'rgba(255, 212, 59, 0.8)',
+                            'rgba(75, 213, 231, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(110, 140, 255)',
+                            'rgb(44, 230, 155)',
+                            'rgb(255, 212, 59)',
+                            'rgb(75, 213, 231)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        );
+
+        // 初始化正确率统计饼图
+        const accuracyChart = new Chart(
+            document.getElementById('accuracyChart'),
+            {
+                type: 'pie',
+                data: {
+                    labels: ['0-20%', '20-41%', '41-62%', '62-83%', '83-100%'],
+                    datasets: [{
+                        data: [2.5, 5.8, 12.3, 36.5, 42.9],
+                        backgroundColor: [
+                            'rgba(255, 107, 107, 0.8)',
+                            'rgba(255, 212, 59, 0.8)',
+                            'rgba(75, 213, 231, 0.8)',
+                            'rgba(110, 140, 255, 0.8)',
+                            'rgba(44, 230, 155, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(255, 107, 107)',
+                            'rgb(255, 212, 59)',
+                            'rgb(75, 213, 231)',
+                            'rgb(110, 140, 255)',
+                            'rgb(44, 230, 155)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        );
+
+        // 技能描述映射
+        const skillDescriptions = {
+            'Q': '基础题',
+            'S': '简单题',
+            'H': '中等题',
+            'T': '较难题',
+            'P': '困难题',
+            'A': '挑战题',
+            'C': '综合题'
+        };
+        
+        // 添加图表点击事件
+        document.getElementById('difficultyChart').addEventListener('click', function(evt) {
+            const activePoints = difficultyChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, false);
+            
+            if (activePoints.length > 0) {
+                const firstPoint = activePoints[0];
+                const skill = difficultyChart.data.labels[firstPoint.index];
+                showSkillDetail(skill);
+            }
+        });
+        
+        // 添加表格行点击事件
+        document.querySelectorAll('#difficulty-list-view tbody tr').forEach(row => {
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', function() {
+                const skill = this.cells[0].innerText;
+                const level = this.cells[1].innerText;
+                showSkillDetail(skill, level);
+            });
+        });
+        
+        // 添加返回按钮点击事件
+        document.getElementById('back-to-skills').addEventListener('click', function() {
+            hideSkillDetail();
+        });
+        
+        // 显示技能详情
+        let skillDetailChart = null;
+        function showSkillDetail(skill, level = null) {
+            document.getElementById('main-skill-view').style.display = 'none';
+            document.getElementById('skill-detail-view').style.display = 'block';
+            document.getElementById('back-to-skills').style.display = 'block';
+            document.getElementById('skill-title').innerText = `难度${skill}详情`;
+            
+            // 获取当前视图状态
+            const viewToggle = document.getElementById('difficulty-view-toggle');
+            const isChartActive = viewToggle.querySelector('button[data-view="chart"]').classList.contains('active');
+            
+            // 设置详情页面的初始视图状态与主页面保持一致
+            if (isChartActive) {
+                document.getElementById('detail-chart-view').style.display = 'block';
+                document.getElementById('detail-list-view').style.display = 'none';
+            } else {
+                document.getElementById('detail-chart-view').style.display = 'none';
+                document.getElementById('detail-list-view').style.display = 'block';
+            }
+            
+            // 生成等级数据
+            const levelData = [];
+            for (let i = 1; i <= 6; i++) {
+                if (level && i != level) continue;
+                levelData.push({
+                    level: i,
+                    accuracy: Math.floor(Math.random() * 30) + 60,
+                    questions: Math.floor(Math.random() * 10) + 5 // 随机生成题目数量
+                });
+            }
+            
+            // 获取技能颜色
+            const skillIndex = difficultyChart.data.labels.indexOf(skill);
+            const skillColor = difficultyChart.data.datasets[0].backgroundColor[skillIndex];
+            
+            // 清除旧图表
+            if (skillDetailChart) {
+                skillDetailChart.destroy();
+            }
+            
+            // 创建技能详情图表
+            skillDetailChart = new Chart(
+                document.getElementById('skillDetailChart'),
+                {
+                    type: 'bar',
+                    data: {
+                        labels: levelData.map(d => `等级${d.level}`),
+                        datasets: [
+                            {
+                                label: '正确率',
+                                data: levelData.map(d => d.accuracy),
+                                backgroundColor: skillColor,
+                                borderColor: skillColor.replace('0.8', '1'),
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '题目数量',
+                                data: levelData.map(d => d.questions),
+                                backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                                borderColor: 'rgba(255, 255, 255, 0.6)',
+                                borderWidth: 1,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                ticks: { callback: v => v + '%' },
+                                title: {
+                                    display: true,
+                                    text: '正确率',
+                                    color: '#e6e6e6'  // 直接使用颜色值而非CSS变量
+                                }
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                grid: {
+                                    drawOnChartArea: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: '题目数量',
+                                    color: '#e6e6e6'  // 直接使用颜色值而非CSS变量
+                                }
+                            },
+                            x: { grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: `难度${skill}(${skillDescriptions[skill] || ''})正确率与题目数量`,
+                                font: { size: 12 },
+                                color: '#e6e6e6'  // 直接使用颜色值而非CSS变量
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label === '正确率') {
+                                            return label + ': ' + context.raw + '%';
+                                        } else {
+                                            return label + ': ' + context.raw + '道';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+            
+            // 更新详情信息
+            const totalAccuracy = levelData.reduce((sum, item) => sum + item.accuracy, 0) / levelData.length;
+            const totalQuestions = levelData.reduce((sum, item) => sum + item.questions, 0);
+            
+            document.getElementById('skill-detail-info').innerHTML = `
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="stats-item">
+                            <div class="stats-label">难度</div>
+                            <div class="stats-value primary">${skill} (${skillDescriptions[skill] || ''})</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-item">
+                            <div class="stats-label">平均正确率</div>
+                            <div class="stats-value info">${totalAccuracy.toFixed(2)}%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-item">
+                            <div class="stats-label">题目总数</div>
+                            <div class="stats-value warning">${totalQuestions}道</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 更新表格视图 - 解决暗色模式下表格文字不清晰问题
+            document.getElementById('skill-detail-table').innerHTML = `
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>等级</th>
+                            <th>题目数量</th>
+                            <th>正确率</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${levelData.map(d => `
+                            <tr>
+                                <td class="text-light">${d.level}</td>
+                                <td class="text-light">${d.questions}道</td>
+                                <td class="text-light">${d.accuracy}%</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        // 隐藏技能详情
+        function hideSkillDetail() {
+            document.getElementById('main-skill-view').style.display = 'block';
+            document.getElementById('skill-detail-view').style.display = 'none';
+            document.getElementById('back-to-skills').style.display = 'none';
+            document.getElementById('skill-title').innerText = '题目难度分析';
+        }
+
+        // 初始化部门分析图表
+        const departmentChart = new Chart(
+            document.getElementById('departmentChart'),
+            {
+                type: 'bar',
+                data: {
+                    labels: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10'],
+                    datasets: [
+                        {
+                            label: '平均正确率',
+                            data: [87.5, 76.2, 82.7, 79.3, 75.1, 81.6, 83.2, 78.5, 80.3, 84.7],
+                            backgroundColor: 'rgba(110, 140, 255, 0.8)',
+                            borderColor: 'rgb(110, 140, 255)',
+                            borderWidth: 1,
+                            order: 1
+                        },
+                        {
+                            label: '及格率',
+                            data: [100, 85, 95, 92, 80, 90, 88, 86, 89, 91],
+                            backgroundColor: 'rgba(44, 230, 155, 0.8)',
+                            borderColor: 'rgb(44, 230, 155)',
+                            borderWidth: 1,
+                            order: 2
+                        },
+                        {
+                            label: '参与率',
+                            data: [95, 90, 100, 88, 100, 85, 92, 96, 93, 94],
+                            backgroundColor: 'rgba(255, 212, 59, 0.8)',
+                            borderColor: 'rgb(255, 212, 59)',
+                            borderWidth: 1,
+                            order: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        );
+
+        // 排行榜数据
+        const rankingData = [
+            { name: "张三", accuracy: 95.7, passed: 3 },
+            { name: "李四", accuracy: 93.2, passed: 4 },
+            { name: "王五", accuracy: 91.8, passed: 5 },
+            { name: "赵六", accuracy: 89.4, passed: 3 },
+            { name: "钱七", accuracy: 88.1, passed: 2 },
+            { name: "孙八", accuracy: 85.3, passed: 4 },
+            { name: "周九", accuracy: 84.2, passed: 3 },
+            { name: "吴十", accuracy: 83.7, passed: 2 },
+            { name: "郑十一", accuracy: 82.5, passed: 3 },
+            { name: "王十二", accuracy: 81.9, passed: 2 },
+            { name: "刘十三", accuracy: 69.8, passed: 1 },
+            { name: "陈十四", accuracy: 68.5, passed: 1 },
+            { name: "杨十五", accuracy: 67.2, passed: 1 },
+            { name: "黄十六", accuracy: 65.9, passed: 2 },
+            { name: "周十七", accuracy: 64.6, passed: 0 },
+            { name: "吴十八", accuracy: 63.3, passed: 1 },
+            { name: "徐十九", accuracy: 62.1, passed: 0 },
+            { name: "孙二十", accuracy: 61.8, passed: 0 },
+            { name: "马二一", accuracy: 60.5, passed: 1 },
+            { name: "朱二二", accuracy: 58.9, passed: 0 }
+        ];
+        
+        // 排序并显示数据
+        function showRanking(type) {
+            const rankingBody = document.getElementById('ranking-body');
+            rankingBody.innerHTML = '';
+            
+            // 对数据进行排序
+            let sortedData = [...rankingData].sort((a, b) => b.accuracy - a.accuracy);
+            
+            // 选择前十或后十
+            let displayData = [];
+            if (type === 'top') {
+                displayData = sortedData.slice(0, 10);
+            } else {
+                displayData = sortedData.slice(-10).reverse();
+                // 后十名按正确率从低到高排序
+                displayData.reverse();
+            }
+            
+            // 生成表格内容
+            displayData.forEach((item, index) => {
+                let rank = type === 'top' ? index + 1 : sortedData.length - 9 + index;
+                
+                const row = document.createElement('tr');
+                
+                // 设置排名单元格
+                const rankCell = document.createElement('td');
+                rankCell.textContent = rank;
+                if (type === 'top' && rank <= 3) {
+                    rankCell.classList.add(`rank-${rank}`);
+                }
+                row.appendChild(rankCell);
+                
+                // 设置姓名单元格
+                const nameCell = document.createElement('td');
+                nameCell.textContent = item.name;
+                row.appendChild(nameCell);
+                
+                // 设置平均正确率单元格
+                const accuracyCell = document.createElement('td');
+                accuracyCell.textContent = item.accuracy.toFixed(1) + '%';
+                row.appendChild(accuracyCell);
+                
+                // 设置已通过考试单元格
+                const passedCell = document.createElement('td');
+                passedCell.innerHTML = `<span class="passed-badge">${item.passed}门</span>`;
+                row.appendChild(passedCell);
+                
+                rankingBody.appendChild(row);
+            });
+            
+            // 确保动态生成的排行榜内容适配暗黑模式
+            document.querySelectorAll('#ranking-body td').forEach(cell => {
+                cell.classList.add('text-light');
+            });
+        }
+        
+        // 初始显示前十名
+        showRanking('top');
+        
+        // 添加切换按钮事件
+        document.querySelectorAll('.rank-toggle button').forEach(button => {
+            button.addEventListener('click', function() {
+                const rankType = this.dataset.rank;
+                
+                // 更新按钮状态
+                document.querySelectorAll('.rank-toggle button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // 更新排行榜
+                showRanking(rankType);
+            });
+        });
+
+        // 部门分析图表点击事件
+        document.getElementById('departmentChart').addEventListener('click', function(evt) {
+            const activePoints = departmentChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, false);
+            
+            if (activePoints.length > 0) {
+                const firstPoint = activePoints[0];
+                const departmentCode = departmentChart.data.labels[firstPoint.index];
+                showDepartmentDetail(departmentCode);
+            }
+        });
+
+        // 部门列表点击事件
+        document.querySelectorAll('#department-list-view tbody tr').forEach(row => {
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', function() {
+                const departmentCode = this.getAttribute('data-department');
+                if (departmentCode) {
+                    showDepartmentDetail(departmentCode);
+                }
+            });
+        });
+
+        // 返回按钮点击事件
+        document.getElementById('back-to-department').addEventListener('click', function() {
+            hideDepartmentDetail();
+        });
+
+        // 模拟部门人员数据
+        const departmentMembersData = {
+            "S1": [
+                { name: "张三", accuracy: 92.5, passRate: 100, participationRate: 100 },
+                { name: "李四", accuracy: 88.7, passRate: 100, participationRate: 100 },
+                { name: "王五", accuracy: 85.3, passRate: 100, participationRate: 100 },
+                { name: "赵六", accuracy: 90.1, passRate: 100, participationRate: 100 },
+                { name: "钱七", accuracy: 81.4, passRate: 100, participationRate: 80 }
+            ],
+            "S2": [
+                { name: "周八", accuracy: 76.8, passRate: 80, participationRate: 100 },
+                { name: "吴九", accuracy: 77.5, passRate: 80, participationRate: 80 },
+                { name: "郑十", accuracy: 74.7, passRate: 90, participationRate: 90 }
+            ]
+            // 其他部门数据可以按需添加
+        };
+
+        // 显示部门详情
+        function showDepartmentDetail(departmentCode) {
+            document.getElementById('department-main-view').style.display = 'none';
+            document.getElementById('department-detail-view').style.display = 'block';
+            document.getElementById('back-to-department').style.display = 'inline-block';
+            document.getElementById('department-title').innerText = `${departmentCode}部门详情`;
+            
+            // 在下钻到部门详情后隐藏切换按钮
+            document.getElementById('department-view-toggle').style.display = 'none';
+            
+            // 获取部门成员数据
+            const members = departmentMembersData[departmentCode] || generateDepartmentMembers(departmentCode);
+            
+            // 更新表格
+            updateDepartmentDetailTable(members);
+            
+            // 初始化排序功能
+            initTableSorting();
+        }
+
+        // 隐藏部门详情
+        function hideDepartmentDetail() {
+            document.getElementById('department-main-view').style.display = 'block';
+            document.getElementById('department-detail-view').style.display = 'none';
+            document.getElementById('back-to-department').style.display = 'none';
+            document.getElementById('department-title').innerText = '部门分析';
+            
+            // 返回主视图时显示切换按钮
+            document.getElementById('department-view-toggle').style.display = 'flex';
+        }
+
+        // 为没有预设数据的部门生成随机成员数据
+        function generateDepartmentMembers(departmentCode) {
+            const count = Math.floor(Math.random() * 8) + 5; // 5-12名成员
+            const members = [];
+            
+            const surnames = ["张", "王", "李", "赵", "钱", "孙", "周", "吴", "郑", "陈", "徐", "杨", "黄", "马", "朱"];
+            
+            for (let i = 0; i < count; i++) {
+                const name = surnames[Math.floor(Math.random() * surnames.length)] + 
+                            (Math.floor(Math.random() * 100) + 1);
+                const accuracy = Math.floor(Math.random() * 30) + 70; // 70-100%
+                const passRate = Math.floor(Math.random() * 30) + 70; // 70-100%
+                const participationRate = Math.floor(Math.random() * 30) + 70; // 70-100%
+                
+                members.push({
+                    name,
+                    accuracy,
+                    passRate,
+                    participationRate
+                });
+            }
+            
+            return members;
+        }
+
+        // 更新部门详情表格
+        function updateDepartmentDetailTable(members) {
+            const tableBody = document.getElementById('department-detail-body');
+            tableBody.innerHTML = '';
+            
+            members.forEach(member => {
+                const row = document.createElement('tr');
+                
+                // 姓名
+                const nameCell = document.createElement('td');
+                nameCell.textContent = member.name;
+                nameCell.className = 'text-light';
+                row.appendChild(nameCell);
+                
+                // 平均正确率
+                const accuracyCell = document.createElement('td');
+                accuracyCell.textContent = member.accuracy + '%';
+                accuracyCell.className = 'text-light';
+                row.appendChild(accuracyCell);
+                
+                // 及格率
+                const passRateCell = document.createElement('td');
+                passRateCell.textContent = member.passRate + '%';
+                passRateCell.className = 'text-light';
+                row.appendChild(passRateCell);
+                
+                // 参与率
+                const participationRateCell = document.createElement('td');
+                participationRateCell.textContent = member.participationRate + '%';
+                participationRateCell.className = 'text-light';
+                row.appendChild(participationRateCell);
+                
+                tableBody.appendChild(row);
+            });
+            
+            // 确保所有单元格文本可见
+            document.querySelectorAll('#department-detail-body tr td').forEach(cell => {
+                if(!cell.classList.contains('text-light')) {
+                    cell.classList.add('text-light');
+                }
+            });
+        }
+
+        // 初始化表格排序功能
+        function initTableSorting() {
+            document.querySelectorAll('.table-sortable .sortable').forEach(header => {
+                header.addEventListener('click', function() {
+                    const sortField = this.getAttribute('data-sort');
+                    const currentDirection = this.classList.contains('sort-asc') ? 'asc' : 
+                                            (this.classList.contains('sort-desc') ? 'desc' : '');
+                    
+                    // 移除所有排序状态
+                    document.querySelectorAll('.table-sortable .sortable').forEach(h => {
+                        h.classList.remove('sort-asc', 'sort-desc');
+                    });
+                    
+                    // 设置新的排序方向
+                    let newDirection = 'asc';
+                    if (currentDirection === 'asc') {
+                        newDirection = 'desc';
+                        this.classList.add('sort-desc');
+                    } else {
+                        this.classList.add('sort-asc');
+                    }
+                    
+                    // 获取表格数据并排序
+                    const tableBody = document.getElementById('department-detail-body');
+                    const rows = Array.from(tableBody.querySelectorAll('tr'));
+                    
+                    // 排序行
+                    rows.sort((a, b) => {
+                        let aValue = a.cells[getColumnIndex(sortField)].textContent;
+                        let bValue = b.cells[getColumnIndex(sortField)].textContent;
+                        
+                        // 如果是数字字段，去掉%符号并转换为数字
+                        if (sortField !== 'name') {
+                            aValue = parseFloat(aValue.replace('%', ''));
+                            bValue = parseFloat(bValue.replace('%', ''));
+                        }
+                        
+                        if (newDirection === 'asc') {
+                            return aValue > bValue ? 1 : -1;
+                        } else {
+                            return aValue < bValue ? 1 : -1;
+                        }
+                    });
+                    
+                    // 重新添加排序后的行
+                    rows.forEach(row => tableBody.appendChild(row));
+                });
+            });
+        }
+
+        // 获取字段对应的列索引
+        function getColumnIndex(field) {
+            switch (field) {
+                case 'name': return 0;
+                case 'accuracy': return 1;
+                case 'passRate': return 2;
+                case 'participationRate': return 3;
+                default: return 0;
+            }
+        }
+
+        // 筛选面板相关功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 筛选面板显示/隐藏
+            const filterToggle = document.getElementById('filter-toggle');
+            const filterPanel = document.getElementById('filter-panel');
+            const closeFilter = document.getElementById('close-filter');
+            const filterSpacer = document.querySelector('.filter-spacer');
+            
+            // 设置初始状态
+            filterPanel.style.display = 'none';
+            
+            filterToggle.addEventListener('click', function() {
+                const isHidden = filterPanel.style.display === 'none';
+                filterPanel.style.display = isHidden ? 'block' : 'none';
+                
+                // 控制间隔元素
+                if(filterSpacer) {
+                    filterSpacer.style.height = isHidden ? '5px' : '0';
+                }
+            });
+            
+            closeFilter.addEventListener('click', function() {
+                filterPanel.style.display = 'none';
+                if(filterSpacer) {
+                    filterSpacer.style.height = '0';
+                }
+            });
+            
+            // 获取日期输入框元素
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            const examNameInput = document.getElementById('exam-name');
+            
+            // 确保所有输入框初始为空
+            if(startDateInput) startDateInput.value = '';
+            if(endDateInput) endDateInput.value = '';
+            if(examNameInput) examNameInput.value = '';
+            
+            // 重置筛选条件
+            const resetFilter = document.getElementById('reset-filter');
+            
+            if(resetFilter) {
+                resetFilter.addEventListener('click', function() {
+                    if(startDateInput) startDateInput.value = '';
+                    if(endDateInput) endDateInput.value = '';
+                    if(examNameInput) examNameInput.value = '';
+                    
+                    // 清空岗位选择
+                    const checkboxes = document.querySelectorAll('.position-checkbox input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                    
+                    // 如果使用了自定义多选下拉框，更新显示
+                    const selectedDisplay = document.querySelector('.multiselect-selected');
+                    const placeholder = document.querySelector('.multiselect-placeholder');
+                    if(selectedDisplay && placeholder) {
+                        selectedDisplay.textContent = '';
+                        placeholder.style.display = 'block';
+                    }
+                });
+            }
+            
+            // 应用筛选
+            const applyFilter = document.getElementById('apply-filter');
+            
+            if(applyFilter) {
+                applyFilter.addEventListener('click', function() {
+                    // 获取所有筛选条件
+                    let positions = [];
+                    
+                    // 检查是否使用了自定义多选下拉框
+                    const checkboxes = document.querySelectorAll('.position-checkbox input[type="checkbox"]');
+                    if(checkboxes.length > 0) {
+                        positions = Array.from(checkboxes)
+                            .filter(cb => cb.checked)
+                            .map(cb => cb.value);
+                    } else {
+                        // 兼容原来的多选下拉框
+                        const positionSelect = document.getElementById('position-select');
+                        if(positionSelect) {
+                            positions = Array.from(positionSelect.selectedOptions).map(option => option.value);
+                        }
+                    }
+                    
+                    const filter = {
+                        startDate: startDateInput ? startDateInput.value : '',
+                        endDate: endDateInput ? endDateInput.value : '',
+                        examName: examNameInput ? examNameInput.value : '',
+                        positions: positions
+                    };
+                    
+                    // 打印筛选条件以便调试
+                    console.log('应用筛选条件:', filter);
+                    
+                    // 显示已应用的筛选通知
+                    showFilterAppliedNotification(filter);
+                    
+                    // 关闭筛选面板
+                    filterPanel.style.display = 'none';
+                    if(filterSpacer) {
+                        filterSpacer.style.height = '0';
+                    }
+                });
+            }
+            
+            // 其他初始化代码保持不变...
+        });
+        
+        // 显示模态框并加载相应数据
+        function showParticipantModal(type) {
+            console.log('显示模态框:', type);
+            
+            // 准备标题
+            let title = '';
+            switch(type) {
+                case 'expected':
+                    title = '应考人员名单';
+                    break;
+                case 'participants':
+                    title = '参与人员名单';
+                    break;
+                case 'failed':
+                    title = '未通过人员名单';
+                    break;
+            }
+            
+            // 设置模态框标题
+            const modalTitleEl = document.getElementById('examParticipantModalLabel');
+            if (modalTitleEl) modalTitleEl.textContent = title;
+            
+            // 加载模拟数据
+            loadParticipantData(type);
+            
+            try {
+                // 使用Bootstrap API显示模态框
+                const modalEl = document.getElementById('examParticipantModal');
+                if (!modalEl) {
+                    console.error('模态框元素不存在');
+                    return;
+                }
+                
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            } catch (error) {
+                console.error('显示模态框时出错:', error);
+                alert('无法显示详情，请检查控制台获取更多信息。');
+            }
+        }
+        
+        // 加载参与者数据
+        function loadParticipantData(type) {
+            // 清除模态框中的旧内容
+            document.querySelector('.modal-body').innerHTML = `
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-compact modal-table">
+                        <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th class="text-end">正确率</th>
+                                <th class="text-center">分数/总分</th>
+                                <th class="text-center">耗时</th>
+                                <th>考试开始时间</th>
+                                <th class="text-center">状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="participant-table-body">
+                            <!-- 数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination-container d-flex justify-content-between align-items-center mt-3">
+                    <div class="page-info text-light small">第 <span id="current-page">1</span>/<span id="total-pages">1</span> 页</div>
+                    <div class="pagination-controls">
+                        <button id="prev-page" class="btn btn-sm page-btn" disabled>上一页</button>
+                        <button id="next-page" class="btn btn-sm page-btn">下一页</button>
+                    </div>
+                </div>
+            `;
+
+            // 模拟数据 - 扩展到更多条目以测试分页功能
+            const expectedData = [
+                { name: '张三', accuracy: 92.5, score: 92.5, totalScore: 100, duration: '00:15:30', startTime: '2023-05-20 09:30', status: '已通过' },
+                { name: '李四', accuracy: 88.0, score: 88, totalScore: 100, duration: '00:12:45', startTime: '2023-05-20 10:15', status: '已通过' },
+                { name: '王五', accuracy: 75.0, score: 75, totalScore: 100, duration: '00:18:20', startTime: '2023-05-20 09:45', status: '已通过' },
+                { name: '赵六', accuracy: 58.0, score: 58, totalScore: 100, duration: '00:20:10', startTime: '2023-05-20 11:00', status: '未通过' },
+                { name: '钱七', accuracy: 95.0, score: 95, totalScore: 100, duration: '00:14:25', startTime: '2023-05-20 10:30', status: '已通过' },
+                { name: '孙八', accuracy: 82.5, score: 82.5, totalScore: 100, duration: '00:16:40', startTime: '2023-05-20 09:50', status: '已通过' },
+                { name: '周九', accuracy: 0, score: 0, totalScore: 100, duration: '-', startTime: '-', status: '未参加' },
+                { name: '吴十', accuracy: 78.5, score: 78.5, totalScore: 100, duration: '00:17:20', startTime: '2023-05-20 10:45', status: '已通过' },
+                { name: '郑十一', accuracy: 64.0, score: 64, totalScore: 100, duration: '00:19:35', startTime: '2023-05-20 11:15', status: '已通过' },
+                { name: '王十二', accuracy: 56.0, score: 56, totalScore: 100, duration: '00:21:10', startTime: '2023-05-20 10:20', status: '未通过' },
+                { name: '刘十三', accuracy: 91.5, score: 91.5, totalScore: 100, duration: '00:13:50', startTime: '2023-05-20 09:40', status: '已通过' },
+                { name: '陈十四', accuracy: 0, score: 0, totalScore: 100, duration: '-', startTime: '-', status: '未参加' },
+                { name: '杨十五', accuracy: 76.0, score: 76, totalScore: 100, duration: '00:18:15', startTime: '2023-05-20 10:10', status: '已通过' },
+                { name: '黄十六', accuracy: 68.5, score: 68.5, totalScore: 100, duration: '00:16:55', startTime: '2023-05-20 11:25', status: '已通过' },
+                { name: '周十七', accuracy: 53.0, score: 53, totalScore: 100, duration: '00:22:30', startTime: '2023-05-20 09:55', status: '未通过' }
+            ];
+            
+            // 根据类型筛选数据
+            let allData = [];
+            switch(type) {
+                case 'expected':
+                    allData = expectedData;
+                    break;
+                case 'participants':
+                    allData = expectedData.filter(item => item.status !== '未参加');
+                    break;
+                case 'failed':
+                    allData = expectedData.filter(item => item.status === '未通过');
+                    break;
+            }
+            
+            // 分页参数
+            const itemsPerPage = 5;
+            let currentPage = 1;
+            const totalPages = Math.ceil(allData.length / itemsPerPage);
+            
+            // 更新分页信息
+            document.getElementById('current-page').textContent = currentPage;
+            document.getElementById('total-pages').textContent = totalPages;
+            
+            // 分页按钮状态
+            const prevBtn = document.getElementById('prev-page');
+            const nextBtn = document.getElementById('next-page');
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            
+            // 显示当前页数据
+            function displayPage(page) {
+                const startIndex = (page - 1) * itemsPerPage;
+                const endIndex = Math.min(startIndex + itemsPerPage, allData.length);
+                const pageData = allData.slice(startIndex, endIndex);
+                
+                const tableBody = document.getElementById('participant-table-body');
+                tableBody.innerHTML = '';
+                
+                if (pageData.length === 0) {
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.innerHTML = `<td colspan="6" class="text-center text-light">没有找到符合条件的数据</td>`;
+                    tableBody.appendChild(emptyRow);
+                    return;
+                }
+                
+                pageData.forEach(person => {
+                    const row = document.createElement('tr');
+                    
+                    // 设置状态相关的类和样式
+                    let statusBadgeClass = '';
+                    switch(person.status) {
+                        case '已通过':
+                            statusBadgeClass = 'status-badge status-passed';
+                            break;
+                        case '未通过':
+                            statusBadgeClass = 'status-badge status-failed';
+                            break;
+                        case '未参加':
+                            statusBadgeClass = 'status-badge status-absent';
+                            break;
+                    }
+                    
+                    // 填充单元格
+                    row.innerHTML = `
+                        <td class="text-light">${person.name}</td>
+                        <td class="text-light text-end">${person.status !== '未参加' ? person.accuracy + '%' : '-'}</td>
+                        <td class="text-light text-center">${person.status !== '未参加' ? person.score + '/' + person.totalScore : '-'}</td>
+                        <td class="text-light text-center">${person.duration}</td>
+                        <td class="text-light">${person.startTime}</td>
+                        <td class="text-center"><span class="${statusBadgeClass}">${person.status}</span></td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+                
+                // 更新分页信息和按钮状态
+                document.getElementById('current-page').textContent = page;
+                prevBtn.disabled = page === 1;
+                nextBtn.disabled = page === totalPages;
+            }
+            
+            // 显示第一页数据
+            displayPage(currentPage);
+            
+            // 添加分页事件监听
+            prevBtn.addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayPage(currentPage);
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayPage(currentPage);
+                }
+            });
+        }
+
+        // 复选下拉框组件交互
+        document.addEventListener('DOMContentLoaded', function() {
+            // 岗位多选下拉框功能
+            const multiselectDropdown = document.querySelector('.multiselect-dropdown');
+            const multiselectBtn = document.querySelector('.multiselect-btn');
+            const multiselectMenu = document.querySelector('.multiselect-dropdown-menu');
+            const checkboxes = document.querySelectorAll('.position-checkbox input[type="checkbox"]');
+            const selectedDisplay = document.querySelector('.multiselect-selected');
+            const placeholder = document.querySelector('.multiselect-placeholder');
+            
+            // 确保初始状态为空
+            if(checkboxes.length > 0 && placeholder) {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                selectedDisplay.textContent = '';
+                placeholder.style.display = 'block';
+            }
+            
+            // 点击按钮显示/隐藏下拉菜单
+            if (multiselectBtn) {
+                multiselectBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    multiselectDropdown.classList.toggle('open');
+                });
+            }
+            
+            // 点击外部区域关闭下拉菜单
+            document.addEventListener('click', function(e) {
+                if (multiselectDropdown && !multiselectDropdown.contains(e.target)) {
+                    multiselectDropdown.classList.remove('open');
+                }
+            });
+            
+            // 防止点击下拉菜单内部时关闭
+            if (multiselectMenu) {
+                multiselectMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+            
+            // 复选框选择逻辑
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelected);
+            });
+            
+            // 更新已选择的显示
+            function updateSelected() {
+                const selectedOptions = Array.from(checkboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+                
+                if (selectedOptions.length === 0) {
+                    selectedDisplay.textContent = '';
+                    placeholder.style.display = 'block';
+                } else {
+                    selectedDisplay.textContent = selectedOptions.join(', ');
+                    placeholder.style.display = 'none';
+                }
+            }
+            
+            // 将选择的值应用到筛选条件
+            const applyFilter = document.getElementById('apply-filter');
+            if(applyFilter) {
+                applyFilter.addEventListener('click', function() {
+                    const selectedPositions = Array.from(checkboxes)
+                        .filter(cb => cb.checked)
+                        .map(cb => cb.value);
+                    
+                    // 获取其他筛选条件
+                    const startDateInput = document.getElementById('start-date');
+                    const endDateInput = document.getElementById('end-date');
+                    const examNameInput = document.getElementById('exam-name');
+                    
+                    // 构建筛选条件对象
+                    const filter = {
+                        startDate: startDateInput ? startDateInput.value : '',
+                        endDate: endDateInput ? endDateInput.value : '',
+                        examName: examNameInput ? examNameInput.value : '',
+                        positions: selectedPositions
+                    };
+                    
+                    // 打印筛选条件以便调试
+                    console.log('应用筛选条件:', filter);
+                    
+                    // 显示已应用的筛选通知
+                    showFilterAppliedNotification(filter);
+                    
+                    // 关闭筛选面板
+                    const filterPanel = document.getElementById('filter-panel');
+                    const filterSpacer = document.querySelector('.filter-spacer');
+                    if(filterPanel) filterPanel.style.display = 'none';
+                    if(filterSpacer) filterSpacer.style.height = '0';
+                });
+            }
+            
+            // 重置筛选条件时清空复选框
+            const resetFilter = document.getElementById('reset-filter');
+            if(resetFilter) {
+                resetFilter.addEventListener('click', function() {
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                    updateSelected();
+                });
+            }
+        });
+
+        // 确保这段代码在DOMContentLoaded事件中，且不会被重复绑定
+        document.addEventListener('DOMContentLoaded', function() {
+            // 绑定指标点击事件前先移除已有的事件监听器，避免重复绑定
+            function addClickHandler(element, type) {
+                if (!element) return;
+                
+                // 用新的事件处理函数替换旧的
+                element.onclick = function() {
+                    showParticipantModal(type);
+                };
+            }
+            
+            // 获取指标元素
+            const expectedCountElement = document.querySelector('.col-md-2:nth-child(1) .stats-item');
+            const participantCountElement = document.querySelector('.col-md-2:nth-child(2) .stats-item');
+            const failedCountElement = document.querySelector('.col-md-2:nth-child(3) .stats-item');
+            
+            // 添加点击事件
+            addClickHandler(expectedCountElement, 'expected');
+            addClickHandler(participantCountElement, 'participants');
+            addClickHandler(failedCountElement, 'failed');
+            
+            // 设置指标元素的鼠标样式为指针，提示可点击
+            [expectedCountElement, participantCountElement, failedCountElement].forEach(el => {
+                if (el) el.style.cursor = 'pointer';
+            });
+            
+            // 确保模态框脚本正确加载
+            if (typeof bootstrap === 'undefined') {
+                console.error('Bootstrap JS 未加载，模态框可能无法正常工作');
+                // 加载Bootstrap JS
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js';
+                script.onload = function() {
+                    console.log('Bootstrap JS 已加载');
+                };
+                document.body.appendChild(script);
+            }
+        });
+
+        // 添加日期输入框提示文本处理
+        document.addEventListener('DOMContentLoaded', function() {
+            // 处理日期输入框的提示文本
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            
+            if(startDateInput) {
+                // 设置自定义属性用于存储提示文本
+                startDateInput.setAttribute('placeholder', '请选择开始日期');
+                
+                // 当输入框获得焦点时清除提示文本
+                startDateInput.addEventListener('focus', function() {
+                    if(!this.value) {
+                        this.type = 'date';
+                    }
+                });
+                
+                // 当输入框失去焦点且无值时，显示提示文本
+                startDateInput.addEventListener('blur', function() {
+                    if(!this.value) {
+                        this.type = 'text';
+                    }
+                });
+                
+                // 初始检查
+                if(!startDateInput.value) {
+                    startDateInput.type = 'text';
+                }
+            }
+            
+            if(endDateInput) {
+                // 对结束日期输入框执行相同操作
+                endDateInput.setAttribute('placeholder', '请选择结束日期');
+                
+                endDateInput.addEventListener('focus', function() {
+                    if(!this.value) {
+                        this.type = 'date';
+                    }
+                });
+                
+                endDateInput.addEventListener('blur', function() {
+                    if(!this.value) {
+                        this.type = 'text';
+                    }
+                });
+                
+                // 初始检查
+                if(!endDateInput.value) {
+                    endDateInput.type = 'text';
+                }
+            }
+        });
+
+        // 在DOMContentLoaded事件中添加统一卡片间距的代码
+        document.addEventListener('DOMContentLoaded', function() {
+            // 函数：统一所有卡片及行之间的间距为5px
+            function normalizeSpacing() {
+                // 所有卡片底部间距统一为5px
+                document.querySelectorAll('.card').forEach(card => {
+                    card.style.marginBottom = '5px';
+                });
+                
+                // 所有行的上下间距
+                document.querySelectorAll('.row').forEach(row => {
+                    if(!row.classList.contains('charts-row')) {
+                        row.style.marginTop = '0';
+                        row.style.marginBottom = '0';
+                    }
+                });
+                
+                // 图表行特殊处理
+                document.querySelectorAll('.charts-row').forEach(row => {
+                    row.style.marginTop = '5px';
+                });
+                
+                // 特殊处理部门分析和排行榜行
+                document.querySelectorAll('.row.mt-4').forEach(row => {
+                    row.style.marginTop = '5px';
+                });
+                
+                // 处理筛选面板与内容的间距
+                const filterPanel = document.querySelector('.filter-panel');
+                if(filterPanel) {
+                    filterPanel.style.marginBottom = '5px';
+                }
+                
+                // 处理标题与内容的间距
+                const title = document.querySelector('h1');
+                if(title) {
+                    title.style.marginBottom = '5px';
+                }
+            }
+            
+            // 初始调用一次
+            normalizeSpacing();
+            
+            // 当窗口大小变化时重新调整
+            window.addEventListener('resize', normalizeSpacing);
+            
+            // 当筛选面板显示/隐藏时重新调整
+            const filterToggle = document.getElementById('filter-toggle');
+            if(filterToggle) {
+                filterToggle.addEventListener('click', function() {
+                    // 延迟执行以确保DOM已更新
+                    setTimeout(normalizeSpacing, 10);
+                });
+            }
+            
+            // 页面加载完成后再次确认间距
+            window.addEventListener('load', normalizeSpacing);
+        });
+    </script>
+</body>
+</html>
