@@ -1129,44 +1129,44 @@
                                 <table class="table table-striped">
                                     <thead>
                                         <tr>
-                                            <th>难度类型</th>
+                                            <th>技能</th>
                                             <th>题目数量</th>
                                             <th>正确率</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>Q (基础题)</td>
+                                            <td>Q</td>
                                             <td>15</td>
                                             <td>85%</td>
                                         </tr>
                                         <tr>
-                                            <td>S (简单题)</td>
+                                            <td>S</td>
                                             <td>12</td>
                                             <td>78%</td>
                                         </tr>
                                         <tr>
-                                            <td>H (中等题)</td>
+                                            <td>H</td>
                                             <td>10</td>
                                             <td>76%</td>
                                         </tr>
                                         <tr>
-                                            <td>T (较难题)</td>
+                                            <td>T</td>
                                             <td>8</td>
                                             <td>91%</td>
                                         </tr>
                                         <tr>
-                                            <td>P (困难题)</td>
+                                            <td>P</td>
                                             <td>5</td>
                                             <td>65%</td>
                                         </tr>
                                         <tr>
-                                            <td>A (挑战题)</td>
+                                            <td>A</td>
                                             <td>3</td>
                                             <td>87%</td>
                                         </tr>
                                         <tr>
-                                            <td>C (综合题)</td>
+                                            <td>C</td>
                                             <td>7</td>
                                             <td>79%</td>
                                         </tr>
@@ -1767,7 +1767,7 @@
             }
         );
 
-        // 技能描述映射
+        // 技能描述映射 - 仅在需要显示解释时使用
         const skillDescriptions = {
             'Q': '基础题',
             'S': '简单题',
@@ -1810,7 +1810,7 @@
             document.getElementById('main-skill-view').style.display = 'none';
             document.getElementById('skill-detail-view').style.display = 'block';
             document.getElementById('back-to-skills').style.display = 'block';
-            document.getElementById('skill-title').innerText = `难度${skill}详情`;
+            document.getElementById('skill-title').innerText = `技能${skill}详情`;
             
             // 获取当前视图状态
             const viewToggle = document.getElementById('difficulty-view-toggle');
@@ -1903,9 +1903,9 @@
                         plugins: {
                             title: {
                                 display: true,
-                                text: `难度${skill}(${skillDescriptions[skill] || ''})正确率与题目数量`,
+                                text: `技能${skill}正确率与题目数量`,
                                 font: { size: 12 },
-                                color: '#e6e6e6'  // 直接使用颜色值而非CSS变量
+                                color: '#e6e6e6'
                             },
                             tooltip: {
                                 callbacks: {
@@ -1932,8 +1932,8 @@
                 <div class="row mb-3">
                     <div class="col-md-4">
                         <div class="stats-item">
-                            <div class="stats-label">难度</div>
-                            <div class="stats-value primary">${skill} (${skillDescriptions[skill] || ''})</div>
+                            <div class="stats-label">技能</div>
+                            <div class="stats-value primary">${skill}</div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -1951,12 +1951,12 @@
                 </div>
             `;
             
-            // 更新表格视图 - 解决暗色模式下表格文字不清晰问题
+            // 更新表格视图 - 修改表头中的"等级"为"技能"
             document.getElementById('skill-detail-table').innerHTML = `
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>等级</th>
+                            <th>技能</th>
                             <th>题目数量</th>
                             <th>正确率</th>
                         </tr>
