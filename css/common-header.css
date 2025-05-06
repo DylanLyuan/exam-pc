@@ -183,4 +183,87 @@ body {
 /* 如果页面结构是直接使用h1标签，则使用下面的样式 */
 h1.page-title {
     display: none;
+}
+
+/* 黑色主题颜色变量 */
+:root {
+    --primary-color: #6e8cff;
+    --secondary-color: #2ce69b;
+    --warning-color: #ffd43b;
+    --danger-color: #ff6b6b;
+    --info-color: #4bd5e7;
+    --dark-bg: #000000;            /* 由#1a1a2e改为纯黑 */
+    --dark-card: #121212;          /* 由#222438改为更深的黑灰 */
+    --dark-header: #1a1a1a;        /* 由#16213e改为深灰黑 */
+    --dark-text: #e6e6e6;
+    --dark-muted: #a0a0a0;
+    --dark-border: #2a2a2a;        /* 由#2a2a4a改为灰黑色 */
+}
+
+/* 卡片和容器样式调整 */
+.card {
+    background-color: var(--dark-card);
+    border: 1px solid var(--dark-border);
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.4);
+}
+
+.card-header {
+    background-color: var(--dark-header);
+    border-bottom: 1px solid var(--dark-border);
+}
+
+/* 表格样式调整 */
+.table th {
+    background-color: var(--dark-header) !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* 按钮样式调整 */
+.btn-filter, .btn-sort, .btn-page {
+    background-color: #1a1a1a;
+    border-color: #333333;
+}
+
+.btn-filter:hover, .btn-sort:hover, .btn-page:hover {
+    background-color: #333333;
+}
+
+.btn-page.active {
+    background-color: var(--primary-color);
+}
+
+/* 指标卡片样式调整 */
+.metric-group {
+    background-color: var(--dark-card);
+    border: 1px solid var(--dark-border);
+}
+
+.metric-parent {
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.metric-child {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.metric-child:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* 模态框样式调整 */
+.modal-content {
+    background-color: var(--dark-card);
+}
+
+.modal-header {
+    background-color: var(--dark-header);
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.modal-footer {
+    background-color: var(--dark-header);
+    border-top: 1px solid var(--dark-border);
 } 

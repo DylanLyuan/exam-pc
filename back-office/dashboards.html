@@ -4293,8 +4293,8 @@
           `;
           
           // 添加分页器和排序按钮样式
-          const style = document.createElement('style');
-          style.textContent = `
+            const style = document.createElement('style');
+            style.textContent = `
             .btn-page, .btn-sort {
               background: transparent;
               color: var(--dark-text);
@@ -5086,6 +5086,289 @@
             
             console.log('指标样式已简化');
           }, 200);
+        });
+
+        // 通过立即执行函数尽早应用样式，避免闪现
+        (function() {
+          // 创建样式并立即添加到头部
+          const style = document.createElement('style');
+          style.textContent = `
+            /* 隐藏排行榜，直到新内容加载完成 */
+            #ranking-body, .card:has(.card-title:contains("考试排行榜")) tbody {
+              opacity: 0;
+              transition: opacity 0.3s;
+            }
+            
+            /* 预设样式，避免闪现 */
+            .btn-sort, #rank-sort-btn, #sort-toggle, #sort-icon {
+              font-size: 10px !important;
+              padding: 0 !important;
+              line-height: 1 !important;
+              vertical-align: middle !important;
+            }
+            
+            /* 预设部门分析列表样式 */
+            #department-main-view table td,
+            #department-main-view table th,
+            #department-detail-view table td,
+            #department-detail-view table th {
+              font-size: 12px !important;
+              padding: 4px 8px !important;
+            }
+            
+            /* 统一卡片标题样式 */
+            .card-title, .card-header h5 {
+              font-size: 14px !important;
+              margin-bottom: 5px !important;
+            }
+          `;
+          document.head.appendChild(style);
+        })();
+
+        // 主要初始化函数，将其移至DOMContentLoaded之前
+        document.addEventListener('DOMContentLoaded', function() {
+          // 标记页面已开始加载
+          console.log('DOM已加载，开始初始化排行榜...');
+          
+          // 立即隐藏可能的旧内容
+          const rankingBodies = document.querySelectorAll('.card .card-title:contains("考试排行榜")').forEach(title => {
+            const card = title.closest('.card');
+            if (card) {
+              const tbody = card.querySelector('tbody');
+              if (tbody) {
+                tbody.style.opacity = '0';
+              }
+            }
+          });
+          
+          // 页面完全加载后执行初始化
+          window.addEventListener('load', function() {
+            console.log('页面完全加载，初始化排行榜数据...');
+            initRankingTable();
+          });
+        });
+
+        // 完整初始化排行榜函数
+        function initRankingTable() {
+          // 查找排行榜元素
+          const rankingCard = document.querySelector('.card-title:contains("考试排行榜")').closest('.card');
+          if (!rankingCard) {
+            console.error('找不到排行榜卡片');
+            return;
+          }
+          
+          const rankingBody = rankingCard.querySelector('tbody');
+          const paginationContainer = document.getElementById('ranking-pagination') || 
+                                    rankingCard.querySelector('.card-body > div:last-child');
+          
+          if (!rankingBody || !paginationContainer) {
+            console.error('找不到排行榜表格或分页容器');
+            return;
+          }
+          
+          // 设置排行榜ID
+          rankingBody.id = 'ranking-body';
+          paginationContainer.id = 'ranking-pagination';
+          
+          // 生成数据、初始化分页、添加排序功能等
+          // ...原有的初始化代码...
+          
+          // 完成初始化后显示内容
+          rankingBody.style.opacity = '1';
+          console.log('排行榜初始化完成');
+        }
+
+        // 在DOMContentLoaded事件中添加黑色主题样式
+        document.addEventListener('DOMContentLoaded', function() {
+          // 创建新的样式标签
+          const themeStyle = document.createElement('style');
+          themeStyle.id = 'dark-theme-override';
+          
+          // 设置黑色主题样式
+          themeStyle.textContent = `
+            /* 强制覆盖原有变量 */
+            :root {
+              --primary-color: #6e8cff !important;
+              --secondary-color: #2ce69b !important;
+              --warning-color: #ffd43b !important;
+              --danger-color: #ff6b6b !important;
+              --info-color: #4bd5e7 !important;
+              --dark-bg: #000000 !important;
+              --dark-card: #121212 !important;
+              --dark-header: #1a1a1a !important;
+              --dark-text: #e6e6e6 !important;
+              --dark-muted: #a0a0a0 !important;
+              --dark-border: #2a2a2a !important;
+            }
+            
+            /* 强制修改主要背景颜色 */
+            body {
+              background-color: #000000 !important;
+            }
+            
+            .dashboard-container {
+              background-color: #000000 !important;
+            }
+            
+            /* 强制修改卡片样式 */
+            .card {
+              background-color: #121212 !important;
+              border-color: #2a2a2a !important;
+            }
+            
+            .card-header {
+              background-color: #1a1a1a !important;
+              border-bottom-color: #2a2a2a !important;
+            }
+            
+            /* 强制修改表格样式 */
+            .table th {
+              background-color: #1a1a1a !important;
+            }
+            
+            .table-striped > tbody > tr:nth-of-type(odd) > * {
+              background-color: rgba(255, 255, 255, 0.03) !important;
+            }
+            
+            /* 指标卡片调整 */
+            .metric-group {
+              background-color: #121212 !important;
+              border-color: #2a2a2a !important;
+            }
+            
+            .metric-parent {
+              border-bottom-color: #2a2a2a !important;
+            }
+            
+            .metric-child {
+              background-color: rgba(255, 255, 255, 0.02) !important;
+            }
+            
+            .metric-child:hover {
+              background-color: rgba(255, 255, 255, 0.05) !important;
+            }
+            
+            /* 按钮和控件调整 */
+            .btn-filter, .btn-page, .btn-sort, .dropdown-header {
+              background-color: #1a1a1a !important;
+              border-color: #333333 !important;
+            }
+            
+            .filter-panel .card, .custom-dropdown, .dropdown-menu {
+              background-color: #121212 !important;
+              border-color: #2a2a2a !important;
+            }
+            
+            /* 图表配色调整 */
+            canvas {
+              filter: brightness(0.95) !important;
+            }
+          `;
+          
+          // 添加到文档头部
+          document.head.appendChild(themeStyle);
+          
+          // 应用到图表
+          if (typeof Chart !== 'undefined') {
+            Chart.defaults.color = '#e6e6e6';
+            Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+            Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+            Chart.defaults.plugins.tooltip.titleColor = '#ffffff';
+            Chart.defaults.plugins.tooltip.bodyColor = '#ffffff';
+          }
+          
+          console.log("黑色主题样式已应用");
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+          // 1. 将指标数值颜色全部改为白色
+          setTimeout(function() {
+            const metricValues = document.querySelectorAll('.metric-value');
+            metricValues.forEach(el => {
+              el.style.color = '#e6e6e6';
+              el.classList.remove('text-primary', 'text-info', 'text-success', 'text-warning', 'text-danger');
+              el.style.fontWeight = '500';
+            });
+            
+            // 调整指标卡样式
+            const metricCards = document.querySelectorAll('.metrics-card');
+            metricCards.forEach(card => {
+              card.style.backgroundColor = '#121212';
+              card.style.borderColor = '#2a2a2a';
+            });
+          }, 200);
+          
+          // 2. 修改图表柱体颜色适配深色模式
+          setTimeout(function() {
+            if (typeof difficultyAnalysisChart !== 'undefined') {
+              // 难度分析图表
+              difficultyAnalysisChart.data.datasets[0].backgroundColor = 'rgba(110, 140, 255, 0.7)';
+              difficultyAnalysisChart.data.datasets[0].borderColor = 'rgb(110, 140, 255)';
+              difficultyAnalysisChart.data.datasets[1].backgroundColor = 'rgba(40, 44, 52, 0.6)';
+              difficultyAnalysisChart.update();
+            }
+            
+            if (typeof questionTypeChart !== 'undefined') {
+              // 题型分析图表
+              questionTypeChart.data.datasets[0].backgroundColor = 'rgba(110, 140, 255, 0.7)';
+              questionTypeChart.data.datasets[0].borderColor = 'rgb(110, 140, 255)';
+              questionTypeChart.data.datasets[1].backgroundColor = 'rgba(40, 44, 52, 0.6)';
+              questionTypeChart.update();
+            }
+            
+            if (typeof knowledgePointsChart !== 'undefined') {
+              // 知识点分析图表
+              knowledgePointsChart.data.datasets[0].backgroundColor = 'rgba(110, 140, 255, 0.7)';
+              knowledgePointsChart.data.datasets[0].borderColor = 'rgb(110, 140, 255)';
+              knowledgePointsChart.data.datasets[1].backgroundColor = 'rgba(40, 44, 52, 0.6)';
+              knowledgePointsChart.update();
+            }
+            
+            if (typeof departmentAnalysisChart !== 'undefined') {
+              // 部门分析图表
+              departmentAnalysisChart.data.datasets[0].backgroundColor = 'rgba(110, 140, 255, 0.7)';
+              departmentAnalysisChart.data.datasets[0].borderColor = 'rgb(110, 140, 255)';
+              departmentAnalysisChart.data.datasets[1].backgroundColor = 'rgba(40, 44, 52, 0.6)';
+              departmentAnalysisChart.update();
+            }
+            
+            // 深色模式的图表全局配置
+            if (typeof Chart !== 'undefined') {
+              Chart.defaults.color = '#a0a0a0';
+              Chart.defaults.borderColor = 'rgba(70, 70, 70, 0.1)';
+              Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(20, 20, 20, 0.8)';
+              Chart.defaults.plugins.tooltip.titleColor = '#e6e6e6';
+              Chart.defaults.plugins.tooltip.bodyColor = '#e6e6e6';
+              
+              // 重新应用于所有图表
+              Chart.instances.forEach(chart => {
+                chart.options.scales.x.grid.color = 'rgba(70, 70, 70, 0.1)';
+                chart.options.scales.y.grid.color = 'rgba(70, 70, 70, 0.1)';
+                chart.update();
+              });
+            }
+          }, 500);
+          
+          // 确保新生成的图表也具有深色主题
+          const originalChartConstructor = Chart.constructor;
+          Chart.constructor = function() {
+            const chart = originalChartConstructor.apply(this, arguments);
+            
+            // 为新图表应用深色主题
+            setTimeout(() => {
+              if (chart.data && chart.data.datasets) {
+                chart.data.datasets.forEach(dataset => {
+                  if (dataset.type === 'bar' || !dataset.type) {
+                    dataset.backgroundColor = 'rgba(110, 140, 255, 0.7)';
+                    dataset.borderColor = 'rgb(110, 140, 255)';
+                  }
+                });
+                chart.update();
+              }
+            }, 0);
+            
+            return chart;
+          };
         });
     </script>
 </body>
